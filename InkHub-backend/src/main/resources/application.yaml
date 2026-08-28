@@ -14,7 +14,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/inkhub?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: ${MYSQL_PASSWORD}  # 环境变量提供（本地 IDEA 运行配置里填 050608，不提交 GitHub）
+    password: 050608 # 环境变量提供（本地 IDEA 运行配置里填 050608，不提交 GitHub）
     hikari:
       maximum-pool-size: 10
 
@@ -36,7 +36,7 @@ spring:
       time-zone: GMT+8
 
 jwt:
-  secret: ${MYSQL_PASSWORD}  # 环境变量提供（本地 IDEA 运行配置里填原值，不提交 GitHub）
+  secret: NcIhLoXWXvO+Uh0KTn0nmjwitdG94LpvRc1ErlcdRtYlTW/x0ysne/qy2wWLcfku # 环境变量提供（本地 IDEA 运行配置里填原值，不提交 GitHub）
   expire: 7200000
 
 

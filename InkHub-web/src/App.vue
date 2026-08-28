@@ -95,7 +95,7 @@
           <template v-if="userStore.isLogin">
             <el-dropdown trigger="click" @command="onCommand">
               <span class="user-chip">
-                <el-avatar :size="30" class="avatar">{{ initial }}</el-avatar>
+                <el-avatar :size="30" class="avatar" :src="userStore.userInfo?.avatar">{{ initial }}</el-avatar>
                 <span class="nickname">{{
                   userStore.userInfo?.nickname || userStore.userInfo?.username
                 }}</span>
