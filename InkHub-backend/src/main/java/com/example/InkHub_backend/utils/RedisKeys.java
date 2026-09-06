@@ -7,4 +7,9 @@ public class RedisKeys {
     public static String articleView(Long articleId) {
         return "article:view:" + articleId;
     }
+
+    // AI 问答限流：每用户每分钟窗口，key: ai:chat:rate:{userId}:{yyyyMMddHHmm}
+    public static String aiChatRate(Long userId, String minute) {
+        return "ai:chat:rate:" + userId + ":" + minute;
+    }
 }

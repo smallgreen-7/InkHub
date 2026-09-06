@@ -16,7 +16,17 @@
     <div class="editor-meta ink-card">
       <div class="meta-grid">
         <div class="meta-cell">
-          <label class="meta-label">摘要</label>
+          <label class="meta-label">摘要
+            <el-button
+              v-if="form.contentMd && form.contentMd.trim()"
+              link
+              type="primary"
+              size="small"
+              :loading="summarizing"
+              style="margin-left: 6px"
+              @click="aiSummarize"
+            >AI 生成</el-button>
+          </label>
           <el-input
             v-model="form.summary"
             type="textarea"
@@ -80,11 +90,13 @@ import { createArticle, updateArticle, getArticle } from '@/api/article'
 import { getCategories } from '@/api/category'
 import { getTags } from '@/api/category'
 import { uploadFile } from '@/api/upload'
+import { summarize as aiSummarizeApi } from '@/api/ai'
 
 const route = useRoute()
 const router = useRouter()
 const isEdit = !!route.params.id
 const form = ref({ title: '', summary: '', categoryId: null, tagIds: [], contentMd: '' })
+const summarizing = ref(false)   // AI 生成摘要中
 const categories = ref([])
 const tags = ref([])
 
@@ -121,6 +133,22 @@ async function save(status) {
     const id = await createArticle(payload)
     ElMessage.success(status === 1 ? '发布成功' : '已存草稿')
     router.push('/article/' + id)
+  }
+}
+
+// AI 生成摘要：正文交给大模型，生成 ≤80 字摘要填入表单
+async function aiSummarize() {
+  if (!form.value.title.trim()) return ElMessage.warning('先生成标题再生成摘要哦')
+  if (!form.value.contentMd.trim()) return ElMessage.warning('正文还是空的')
+  summarizing.value = true
+  try {
+    const summary = await aiSummarizeApi({ title: form.value.title, contentMd: form.value.contentMd })
+    form.value.summary = summary
+    ElMessage.success('摘要已生成，可手动微调')
+  } catch {
+    /* 拦截器已提示 */
+  } finally {
+    summarizing.value = false
   }
 }
 

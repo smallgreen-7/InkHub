@@ -94,7 +94,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getArticles } from '@/api/article'
+import { getArticles, semanticSearch } from '@/api/article'
 import { getCategories } from '@/api/category'
 import { useUserStore } from '@/stores/user'
 
@@ -110,6 +110,13 @@ const pageSize = 12
 const total = ref(0)
 
 async function load(page = 1) {
+  // AI 语义搜索：有关键词时用向量召回（更懂"意思"），无关键词走原列表
+  if (keyword.value && keyword.value.trim()) {
+    const list = await semanticSearch(keyword.value.trim())
+    articles.value = list
+    total.value = list.length
+    return
+  }
   pageNum.value = page
   const data = await getArticles({
     pageNum: page, pageSize,

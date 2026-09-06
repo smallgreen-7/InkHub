@@ -19,6 +19,11 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            proxyRes.headers['cache-control'] = 'no-cache'
+          })
+        },
       },
       // 图片代理：/uploads → 后端静态目录（头像/封面图显示）
       '/uploads': {

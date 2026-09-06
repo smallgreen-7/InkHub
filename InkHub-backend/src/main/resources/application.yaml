@@ -4,17 +4,39 @@ server:
 spring:
   application:
     name: InkHub-backend
+  ai:
+    model:
+      chat: deepseek      # 只启用 DeepSeek 对话模型（openai starter 仅用其 embedding）
+      embedding: openai   # 只启用 OpenAI 兼容 embedding（百炼）
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY}
+      chat:
+        options:
+          model: deepseek-v4-flash
+          temperature: 0.3
+    openai:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: ${DASHSCOPE_API_KEY}
+      embedding:
+        options:
+          model: qwen3.7-text-embedding-flash
+    vectorstore:
+      qdrant:
+        host: localhost
+        port: 6334        # gRPC 端口（Spring AI Qdrant 客户端走 gRPC，6333 是 HTTP）
+        collection-name: inkhub_articles
+        initialize-schema: true
 
   servlet:
     multipart:
-      max-file-size: 20MB        # 单文件最大 5MB
+      max-file-size: 20MB
       max-request-size: 20MB
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/inkhub?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 050608 # 环境变量提供（本地 IDEA 运行配置里填 050608，不提交 GitHub）
+    password: ${MySQL_Password}
     hikari:
       maximum-pool-size: 10
 
@@ -22,12 +44,12 @@ spring:
       redis:
         host: localhost
         port: 6379
-        database: 0             # 默认 0 号库
-        password:               # 没设密码就留空
+        database: 0
+        password:
         timeout: 5s
         lettuce:
           pool:
-            max-active: 8       # 最大连接数
+            max-active: 8
             max-idle: 8
             min-idle: 0
 
@@ -36,34 +58,44 @@ spring:
       time-zone: GMT+8
 
 jwt:
-  secret: NcIhLoXWXvO+Uh0KTn0nmjwitdG94LpvRc1ErlcdRtYlTW/x0ysne/qy2wWLcfku # 环境变量提供（本地 IDEA 运行配置里填原值，不提交 GitHub）
+  secret: NcIhLoXWXvO+Uh0KTn0nmjwitdG94LpvRc1ErlcdRtYlTW/x0ysne/qy2wWLcfku
   expire: 7200000
 
 
 mybatis-plus:
 
   mapper-locations: classpath:mapper/*.xml
-  # 实体类包路径（@TableName 的实体）
+
   type-aliases-package: com.InkHub_backend.entity
   configuration:
-    map-underscore-to-camel-case: true   # 下划线自动转驼峰：user_id → userId
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # 控制台打印 SQL（调试用）
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
-    banner: false              # 关掉启动时的 MP logo
+    banner: false
     db-config:
-      id-type: auto            # 主键自增
-      logic-delete-field: deleted        # 逻辑删除字段名（表里有才配）
-      logic-delete-value: 1              # 删除值
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
       logic-not-delete-value: 0
 
 springdoc:
   api-docs:
-    enabled: true                    # 是否生成文档（生产环境改 false）
+    enabled: true
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-  packages-to-scan: com.example.InkHub_backend.controller   # 只扫描 controller
+  packages-to-scan: com.example.InkHub_backend.controller
 
-# 上传文件保存目录（部署 Docker 时挂载卷到这个目录）
+
 upload:
   dir: ./uploads
+
+
+ai:
+  top-k: 5
+  min-score: 0.35
+  max-chunk-per-article: 2
+  chunk-size: 600
+  chunk-overlap: 100
+  rate-limit: 20
+  search-top-n: 20

@@ -30,6 +30,7 @@ public class AdminController {
     private final CategoryMapper categoryMapper;
     private final TagMapper tagMapper;
     private final ArticleTagMapper articleTagMapper;
+    private final com.example.InkHub_backend.service.AiIndexService aiIndexService;   // AI 索引联动
 
     // ========== 文章管理 ==========
 
@@ -53,6 +54,7 @@ public class AdminController {
         articleMapper.update(null, new LambdaUpdateWrapper<Article>()
                 .set(Article::getStatus, 2)
                 .eq(Article::getId, id));
+        aiIndexService.removeArticle(id);   // AI 联动：下架的文章不进检索
         return R.ok();
     }
 
@@ -67,6 +69,7 @@ public class AdminController {
         articleMapper.update(null, new LambdaUpdateWrapper<Article>()
                 .set(Article::getStatus, 1)
                 .eq(Article::getId, id));
+        aiIndexService.indexArticleAsync(id);   // AI 联动：恢复发布重新纳入检索
         return R.ok();
     }
 
@@ -88,6 +91,7 @@ public class AdminController {
     public R<Void> delete(@Parameter(description = "文章 id") @PathVariable Long id) {
         articleMapper.deleteById(id);
         articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>().eq(ArticleTag::getArticleId, id));
+        aiIndexService.removeArticle(id);   // AI 联动：文章删除，向量点同事务移除
         return R.ok();
     }
 

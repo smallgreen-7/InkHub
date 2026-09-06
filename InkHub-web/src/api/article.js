@@ -60,3 +60,7 @@ export function getMyFavorites() {
 export function getRelatedArticles(id) {
   return request.get(`/articles/${id}/related`)
 }
+// AI 语义搜索（向量召回相关文章）
+export function semanticSearch(keyword) {
+  return request.get('/articles/semantic', { params: { keyword } })
+}

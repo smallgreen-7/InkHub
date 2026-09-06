@@ -85,4 +85,12 @@ public class ArticleController {
             @Parameter(description = "文章 id") @PathVariable Long id) {
         return R.ok(articleService.related(id));
     }
+
+    // AI 语义搜索（公开）：向量召回语义相关的文章，按相关度返回
+    @Operation(summary = "语义搜索", description = "AI 向量检索，找语义相关的文章（不依赖关键词完全匹配）")
+    @GetMapping("/semantic")
+    public R<List<ArticleVO>> semanticSearch(
+            @Parameter(description = "搜索词") @RequestParam String keyword) {
+        return R.ok(articleService.semanticSearch(keyword));
+    }
 }

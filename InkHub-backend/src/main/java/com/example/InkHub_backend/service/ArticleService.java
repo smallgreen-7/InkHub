@@ -23,4 +23,6 @@ public interface ArticleService {
     Page<ArticleVO> myArticles(Long userId, int pageNum, int pageSize);  // 我的文章（含草稿）
 
     List<ArticleVO> related(Long id);
+
+    List<ArticleVO> semanticSearch(String keyword);   // AI 语义搜索（向量召回）
 }

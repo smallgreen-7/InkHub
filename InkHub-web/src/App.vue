@@ -146,6 +146,9 @@
         <span>一个 Markdown 知识社区</span>
       </div>
     </footer>
+
+    <!-- 全局悬浮 AI 助手 -->
+    <AiFloating />
   </div>
 </template>
 
@@ -153,6 +156,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import AiFloating from '@/components/AiFloating.vue'
 import {
   getNotifications,
   getUnreadCount,
