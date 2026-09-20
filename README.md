@@ -82,10 +82,10 @@ npm run dev
 
 ## 📸 截图
 
-![](https://cdn.jsdelivr.net/gh/samllgreen/InkHub@main/images/2.png)
+![](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/2.png)
 
 
 
-![1](https://cdn.jsdelivr.net/gh/samllgreen/InkHub@main/images/1.png)
+![1](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/1.png)
 
-![3](https://cdn.jsdelivr.net/gh/samllgreen/InkHub@main/images/3.png)
+![3](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/3.png)
