@@ -79,6 +79,7 @@ npm run dev
 3. **二级评论**：一张表 parent_id 模型 + SQL `IF(parent_id IS NULL, id, parent_id)` 排序分组，前端一次查出 filter 渲染，不递归查库
 4. **JWT 认证**：无状态登录，过滤器校验 token，role 区分普通用户/管理员权限
 5. **上传安全**：UUID 重命名防路径穿越、类型白名单、大小限制、绝对路径存储 + 静态映射
+6. **AI 站内问答（RAG + Agent）**：Spring AI 接入 DeepSeek（对话）+ 百炼 embedding + Qdrant 向量库；检索走两阶段管线——向量 + MySQL FULLTEXT(ngram) BM25 双路召回 → RRF 融合 → 百炼 Rerank 精排；Function Calling 注册「热门文章 / 数据统计 / 作者查询」3 个工具，Redis 按会话保存多轮记忆；SSE 流式输出并附引用来源，配限流 + 降级兜底
 
 ## 📸 截图
 
