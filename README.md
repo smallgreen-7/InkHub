@@ -82,10 +82,22 @@ npm run dev
 
 ## 📸 截图
 
-![](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/2.png)
+**首页 · 深海主题**
 
+![](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/home.png)
 
+**AI 助手 · 站内问答（RAG + 混合检索 + Rerank）**
 
-![1](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/1.png)
+<img src="https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/ai-chat.png" width="360" />
 
-![3](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/3.png)
+**写文章 · Markdown 编辑器**
+
+![](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/editor.png)
+
+**后台管理 · 文章管理 / 分类标签 / 数据统计**
+
+![](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/admin-article.png)
+
+![](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/admin-category.png)
+
+![](https://cdn.jsdelivr.net/gh/smallgreen-7/InkHub@main/images/admin-stats.png)
