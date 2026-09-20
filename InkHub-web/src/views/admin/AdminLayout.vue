@@ -54,11 +54,11 @@
 
 /* 深墨色侧边栏 */
 .aside {
-  background: linear-gradient(180deg, #16182b 0%, #1e2140 100%);
+  background: linear-gradient(180deg, var(--ink-deep) 0%, var(--ink-abyss) 100%);
   border-right: none;
   display: flex;
   flex-direction: column;
-  color: #fff;
+  color: var(--ink-foam);
 }
 .brand {
   display: flex;
@@ -69,13 +69,13 @@
 .brand-mark {
   width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
+  background: var(--ink-accent-glow);
   border-radius: 10px;
-  color: #fff;
-  box-shadow: var(--ink-shadow-primary);
+  color: var(--ink-abyss);
+  box-shadow: 0 0 18px rgba(90, 209, 230, 0.3);
 }
-.brand-text { font-size: 15.5px; font-weight: 800; color: #fff; letter-spacing: -0.2px; }
-.brand-text em { font-style: normal; color: var(--ink-primary-300); }
+.brand-text { font-family: var(--ink-serif); font-size: 16px; font-weight: 600; color: var(--ink-foam); letter-spacing: 0.02em; }
+.brand-text em { font-style: normal; color: var(--ink-accent-glow); }
 
 .menu { background: transparent; border-right: none; flex: 1; --el-menu-text-color: #a5a9c6; --el-menu-hover-text-color: #fff; --el-menu-active-color: #fff; --el-menu-item-height: 46px; }
 .menu-label {
@@ -93,8 +93,9 @@
 }
 .menu :deep(.el-menu-item:hover) { background: rgba(255, 255, 255, 0.07); }
 .menu :deep(.el-menu-item.is-active) {
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
-  box-shadow: var(--ink-shadow-primary);
+  background: rgba(90, 209, 230, 0.14);
+  color: var(--ink-accent-glow) !important;
+  box-shadow: none;
 }
 
 .aside-foot { padding: 16px 20px 22px; border-top: 1px solid rgba(255, 255, 255, 0.08); }

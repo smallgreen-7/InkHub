@@ -1,7 +1,7 @@
 <template>
   <div class="admin-category">
     <div class="page-head">
-      <h2 class="page-title">🏷️ 分类标签</h2>
+      <h2 class="page-title">分类标签</h2>
     </div>
 
     <el-row :gutter="20">

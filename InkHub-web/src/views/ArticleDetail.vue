@@ -137,7 +137,7 @@
 
       <!-- 相关阅读 -->
       <div v-if="related.length" class="related">
-        <h3 class="related-title">📖 相关阅读</h3>
+        <h3 class="related-title">相关阅读</h3>
         <div class="related-grid">
           <div
             v-for="r in related"
@@ -146,7 +146,7 @@
             @click="$router.push('/article/' + r.id)"
           >
             <h4 class="related-name">{{ r.title }}</h4>
-            <p class="related-meta">👁 {{ r.viewCount }} · 👍 {{ r.likeCount }}</p>
+            <p class="related-meta">浏览 {{ r.viewCount }} · 赞 {{ r.likeCount }}</p>
           </div>
         </div>
       </div>
@@ -176,7 +176,7 @@
           </div>
         </div>
         <div v-else class="login-tip ink-card">
-          <span>💬 登录后即可参与评论</span>
+          <span>登录后即可参与评论</span>
           <el-button size="small" @click="$router.push('/login')">去登录</el-button>
         </div>
 
@@ -372,8 +372,8 @@ onMounted(load)
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
-  color: #fff;
+  background: var(--ink-deep);
+  color: var(--ink-accent-glow);
   font-size: 12px;
   font-weight: 700;
   display: inline-flex;
@@ -418,16 +418,16 @@ onMounted(load)
   transform: translateY(-1px);
 }
 .action-btn.is-liked {
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent)) !important;
+  background: var(--ink-accent) !important;
   border-color: transparent !important;
   color: #fff !important;
-  box-shadow: var(--ink-shadow-primary);
+  box-shadow: 0 4px 14px rgba(29, 159, 192, 0.3);
 }
 .action-btn.is-faved {
-  background: linear-gradient(135deg, #f59e0b, #f97316) !important;
+  background: var(--ink-navy) !important;
   border-color: transparent !important;
-  color: #fff !important;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  color: var(--ink-foam) !important;
+  box-shadow: 0 4px 14px rgba(20, 48, 74, 0.3);
 }
 
 /* 评论区 */
@@ -491,8 +491,8 @@ onMounted(load)
   height: 34px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
-  color: #fff;
+  background: var(--ink-deep);
+  color: var(--ink-accent-glow);
   font-size: 13px;
   font-weight: 700;
   display: flex;

@@ -6,22 +6,37 @@ export function summarize(data) {
 }
 
 /**
- * RAG 问答（SSE 流式）
+ * 统一 SSE 流式对话（RAG + Agent 共用解析逻辑）
  * EventSource 不支持 POST/Header，用 fetch + ReadableStream 手写解析
  * 服务端事件：data: {"type":"delta"|"sources"|"done"|"error", ...}
+ * @param mode 'rag' | 'agent'
  * @returns AbortController（停止回答用）
  */
-export function chatStream({ question, contextType, articleId, history, onDelta, onSources, onDone, onError }) {
+export function chatStream({
+  mode = 'rag',
+  question,
+  sessionId,
+  contextType,
+  articleId,
+  history,
+  onDelta,
+  onSources,
+  onDone,
+  onError,
+}) {
   const token = localStorage.getItem('token')
   const controller = new AbortController()
+  const url = mode === 'agent' ? '/api/ai/agent/chat' : '/api/ai/chat'
+  const body =
+    mode === 'agent' ? { question, sessionId } : { question, contextType, articleId, history }
 
-  fetch('/api/ai/chat', {
+  fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ question, contextType, articleId, history }),
+    body: JSON.stringify(body),
     signal: controller.signal,
   })
     .then(async (resp) => {

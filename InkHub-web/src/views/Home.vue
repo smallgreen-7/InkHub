@@ -3,6 +3,7 @@
     <!-- Hero 横幅（全宽） -->
     <div class="hero">
       <div class="hero-inner">
+        <div class="eyebrow eyebrow--foam hero-eyebrow">A MARKDOWN KNOWLEDGE COMMUNITY</div>
         <h1 class="hero-title">记录思考，分享洞见</h1>
         <p class="hero-sub">一个属于写作者的 Markdown 知识社区</p>
         <div class="hero-search">
@@ -15,9 +16,9 @@
           <el-button class="search-btn ink-gradient-btn" @click="load(1)">搜索</el-button>
         </div>
         <div class="hero-sort">
-          <button class="sort-chip" :class="{ active: sort === 'latest' }" @click="changeSort('latest')">✨ 最新</button>
-          <button class="sort-chip" :class="{ active: sort === 'hot' }" @click="changeSort('hot')">🔥 最热</button>
-          <el-button class="hero-write ink-gradient-btn" round @click="goWrite">✍️ 开始写作</el-button>
+          <button class="sort-chip" :class="{ active: sort === 'latest' }" @click="changeSort('latest')">最新</button>
+          <button class="sort-chip" :class="{ active: sort === 'hot' }" @click="changeSort('hot')">最热</button>
+          <el-button class="hero-write ink-gradient-btn" round @click="goWrite">开始写作</el-button>
         </div>
       </div>
     </div>
@@ -26,7 +27,7 @@
     <div class="body home-body">
       <!-- 左侧分类 -->
       <aside class="side">
-        <div class="side-title">📂 分类</div>
+        <div class="side-title">分类</div>
         <div class="cat-list">
           <div class="cat-item" :class="{ active: !categoryId }" @click="selectCat(null)">
             <span class="cat-name">全部文章</span>
@@ -152,41 +153,54 @@ onMounted(async () => {
 <style scoped>
 /* Hero 全宽横幅 */
 .hero {
-  margin: -28px 0 28px;
-  padding: 72px 0 60px;
-  background:
-    radial-gradient(900px 380px at 12% -20%, rgba(124, 58, 237, 0.45), transparent 60%),
-    radial-gradient(800px 320px at 95% -10%, rgba(79, 70, 229, 0.4), transparent 55%),
-    radial-gradient(600px 300px at 60% 120%, rgba(236, 72, 153, 0.22), transparent 60%),
-    linear-gradient(135deg, var(--ink-hero-start) 0%, var(--ink-hero-end) 55%, #6d28d9 100%);
-  color: #fff;
+  margin: -40px 0 48px;
+  padding: 96px 0 76px;
+  color: var(--ink-foam);
   position: relative;
   overflow: hidden;
+  background:
+    radial-gradient(1000px 460px at 50% -30%, rgba(90, 209, 230, 0.16), transparent 62%),
+    radial-gradient(700px 420px at 88% 8%, rgba(29, 159, 192, 0.14), transparent 60%),
+    linear-gradient(180deg, #0a1725 0%, #0d1f31 55%, #14304a 100%);
 }
+/* 水下光束 + 细颗粒 */
 .hero::after {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
-  background-size: 26px 26px;
-  opacity: 0.35;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    22px 22px;
   pointer-events: none;
 }
 .hero-inner {
   position: relative;
   z-index: 1;
   text-align: center;
-  max-width: 760px;
+  max-width: 720px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 24px;
+}
+.hero-eyebrow {
+  margin-bottom: 18px;
 }
 .hero-title {
-  margin: 0 0 12px;
-  font-size: 44px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-family: var(--ink-serif);
+  margin: 0 0 14px;
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #f2f9fc;
 }
-.hero-sub { margin: 0 0 30px; color: rgba(255, 255, 255, 0.75); font-size: 16px; }
+.hero-sub {
+  margin: 0 0 36px;
+  color: var(--ink-foam-dim);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
 
 .hero-search {
   max-width: 600px;
@@ -202,9 +216,9 @@ onMounted(async () => {
   transition: all 0.25s ease;
 }
 .hero-search:focus-within {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  background: rgba(90, 209, 230, 0.1);
+  border-color: rgba(90, 209, 230, 0.55);
+  box-shadow: 0 8px 32px rgba(8, 18, 29, 0.35);
 }
 .search-icon { color: rgba(255, 255, 255, 0.7); flex-shrink: 0; }
 .search-input {
@@ -233,10 +247,18 @@ onMounted(async () => {
 }
 .sort-chip:hover { background: rgba(255, 255, 255, 0.14); }
 .sort-chip.active {
-  background: #fff;
-  color: var(--ink-primary);
+  background: var(--ink-accent-glow);
+  color: var(--ink-abyss);
   font-weight: 600;
-  border-color: #fff;
+  border-color: var(--ink-accent-glow);
+}
+
+/* 深海面上，主按钮要用那抹青色，否则深色按钮会看不见 */
+.search-btn,
+.hero-write {
+  background: var(--ink-accent-glow) !important;
+  color: var(--ink-abyss) !important;
+  box-shadow: 0 4px 16px rgba(90, 209, 230, 0.3);
 }
 
 .hero-write {
@@ -308,10 +330,10 @@ onMounted(async () => {
   overflow: hidden;
 }
 .cover {
-  height: 150px;
+  height: 168px;
   flex-shrink: 0;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--ink-primary-50), var(--ink-accent-50, #e0e7ff));
+  background: linear-gradient(135deg, #eef4f7, #e2edf2);
 }
 .cover img {
   width: 100%;
@@ -325,13 +347,14 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(200px 100px at 20% -30%, rgba(124, 58, 237, 0.35), transparent 60%),
-    linear-gradient(135deg, var(--ink-hero-start), var(--ink-hero-end));
+    radial-gradient(240px 120px at 30% -30%, rgba(90, 209, 230, 0.16), transparent 65%),
+    linear-gradient(180deg, #0d1f31, #14304a);
 }
 .cover-fallback {
-  font-size: 44px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--ink-serif);
+  font-size: 46px;
+  font-weight: 600;
+  color: rgba(211, 227, 238, 0.85);
 }
 .card-body {
   padding: 18px 20px 20px;
@@ -379,8 +402,8 @@ onMounted(async () => {
 .author-avatar {
   width: 22px; height: 22px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
-  color: #fff;
+  background: var(--ink-deep);
+  color: var(--ink-accent-glow);
   font-size: 11px;
   font-weight: 700;
   display: inline-flex;
@@ -402,13 +425,13 @@ onMounted(async () => {
 .pager { display: flex; justify-content: center; margin-top: 32px; }
 
 @media (max-width: 1024px) {
-  .hero-title { font-size: 34px; }
+  .hero-title { font-size: 38px; }
 }
 @media (max-width: 860px) {
   .body { flex-direction: column; }
   .side { width: 100%; position: static; }
-  .hero { padding: 52px 0 44px; }
-  .hero-title { font-size: 28px; }
+  .hero { padding: 64px 0 52px; }
+  .hero-title { font-size: 30px; }
   .home-body { padding: 0 16px; }
 }
 </style>

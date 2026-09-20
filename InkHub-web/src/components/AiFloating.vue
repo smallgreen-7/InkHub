@@ -53,9 +53,19 @@
           </svg>
           AI 助手 · 墨墨
         </span>
-        <span v-if="ctx.article" class="ctx-chip" title="当前在文章页，可针对这篇文章提问">
-          📄 当前文章
-        </span>
+        <div class="mode-switch">
+          <button class="mode-btn" :class="{ active: mode === 'rag' }" @click="switchMode('rag')">
+            📖 文章问答
+          </button>
+          <button
+            class="mode-btn"
+            :class="{ active: mode === 'agent' }"
+            @click="switchMode('agent')"
+          >
+            🔧 数据助手
+          </button>
+        </div>
+        <span v-if="mode === 'agent' && ctx.article" class="ctx-chip" style="display: none"></span>
         <el-button v-if="messages.length" link type="info" size="small" @click="clearChat"
           >清空</el-button
         >
@@ -64,11 +74,21 @@
       <div ref="bodyRef" class="panel-body">
         <!-- 空态引导 -->
         <div v-if="!messages.length" class="welcome">
-          <p>我是「墨墨」，已通读站内文章，可以直接问我 👇</p>
-          <div class="chips">
-            <button v-for="q in samples" :key="q" class="chip" @click="ask(q)">{{ q }}</button>
-          </div>
-          <p v-if="ctx.article" class="ctx-tip">你正在看文章，问它相关的问题效果更好</p>
+          <template v-if="mode === 'rag'">
+            <p>我是「墨墨」，已通读站内文章，可以直接问我 👇</p>
+            <div class="chips">
+              <button v-for="q in samples" :key="q" class="chip" @click="ask(q)">{{ q }}</button>
+            </div>
+            <p v-if="ctx.article" class="ctx-tip">你正在看文章，问它相关的问题效果更好</p>
+          </template>
+          <template v-else>
+            <p>数据模式：我能查站内文章和用户数据，比如 👇</p>
+            <div class="chips">
+              <button v-for="q in agentSamples" :key="q" class="chip" @click="ask(q)">
+                {{ q }}
+              </button>
+            </div>
+          </template>
         </div>
 
         <div v-for="m in messages" :key="m.id" class="msg" :class="m.role">
@@ -123,6 +143,7 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const samples = ['这个站有哪些文章？', '站内文章讲了什么内容？', '这个项目怎么部署的？']
+const agentSamples = ['最近有什么热门文章？', '这个站有多少作者？', '浏览量最高的文章是哪篇？']
 
 const panelOpen = ref(false)
 const messages = ref([])
@@ -130,6 +151,9 @@ const draft = ref('')
 const streaming = ref(false)
 const controller = ref(null)
 const bodyRef = ref(null)
+
+const mode = ref('rag') // 'rag' | 'agent'
+const sessionId = ref(newSessionId()) // 会话 id，清空时更换
 
 // 页面上下文：文章详情页时带上"当前文章"
 const ctx = computed(() => {
@@ -194,7 +218,9 @@ function send() {
     .map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
 
   controller.value = chatStream({
+    mode: mode.value,
     question: q,
+    sessionId: sessionId.value,
     contextType: ctx.value.article ? 'article' : 'normal',
     articleId: ctx.value.article ? Number(ctx.value.article) : null,
     history,
@@ -246,6 +272,23 @@ function stop() {
 function clearChat() {
   if (streaming.value) stop()
   messages.value = []
+  sessionId.value = newSessionId() // 清空 = 开新会话（后端旧 key 2h 自动过期）
+}
+
+function newSessionId() {
+  // 浏览器支持 crypto.randomUUID 就用，否则降级
+  return (
+    (crypto.randomUUID && crypto.randomUUID()) ||
+    Date.now().toString(36) + Math.random().toString(36).slice(2)
+  )
+}
+
+function switchMode(m) {
+  if (mode.value === m) return
+  if (streaming.value) stop()
+  mode.value = m
+  messages.value = [] // 切模式清空消息（两种模式上下文不混）
+  sessionId.value = newSessionId() // 换新会话
 }
 </script>
 
@@ -461,5 +504,27 @@ function clearChat() {
     width: calc(100vw - 24px);
     right: 12px;
   }
+}
+.mode-switch {
+  display: flex;
+  background: #eef0f6;
+  border-radius: 999px;
+  padding: 2px;
+}
+.mode-btn {
+  border: none;
+  background: transparent;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #606266;
+  white-space: nowrap;
+}
+.mode-btn.active {
+  background: #fff;
+  color: #4f46e5;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 </style>

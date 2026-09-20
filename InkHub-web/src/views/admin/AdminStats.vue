@@ -1,7 +1,7 @@
 <template>
   <div class="stats">
     <div class="page-head">
-      <h2 class="page-title">📊 数据统计</h2>
+      <h2 class="page-title">数据统计</h2>
     </div>
 
     <!-- 概览卡片 -->
@@ -36,13 +36,13 @@
     <el-row :gutter="16">
       <el-col :span="12" class="chart-col">
         <div class="ink-card chart-card">
-          <div class="chart-title">🔥 热门文章 Top10</div>
+          <div class="chart-title">热门文章 Top10</div>
           <div ref="hotChart" class="chart"></div>
         </div>
       </el-col>
       <el-col :span="12" class="chart-col">
         <div class="ink-card chart-card">
-          <div class="chart-title">📂 分类分布</div>
+          <div class="chart-title">分类分布</div>
           <div ref="catChart" class="chart"></div>
         </div>
       </el-col>
@@ -81,8 +81,8 @@ onMounted(async () => {
       itemStyle: {
         borderRadius: [0, 7, 7, 0],
         color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-          { offset: 0, color: '#818cf8' },
-          { offset: 1, color: '#4f46e5' },
+          { offset: 0, color: '#9bdbe8' },
+          { offset: 1, color: '#1d9fc0' },
         ]),
       },
     }],
@@ -92,7 +92,7 @@ onMounted(async () => {
   cat.setOption({
     tooltip: { trigger: 'item' },
     legend: { bottom: 0, textStyle: { color: '#6b7280' } },
-    color: ['#4f46e5', '#7c3aed', '#818cf8', '#a5b4fc', '#c7d2fe', '#f59e0b', '#10b981', '#ef4444'],
+    color: ['#1d9fc0', '#14304a', '#63c6da', '#9bdbe8', '#c9a87c', '#d09a3c', '#2f9e75', '#d4564f'],
     series: [{
       type: 'pie',
       radius: ['42%', '66%'],
@@ -131,10 +131,10 @@ onMounted(async () => {
   color: #fff;
   flex-shrink: 0;
 }
-.icon-article { background: linear-gradient(135deg, #4f46e5, #6366f1); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
-.icon-user { background: linear-gradient(135deg, #7c3aed, #a855f7); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3); }
-.icon-comment { background: linear-gradient(135deg, #0ea5e9, #38bdf8); box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); }
-.icon-view { background: linear-gradient(135deg, #f59e0b, #fbbf24); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+.icon-article { background: var(--ink-deep); box-shadow: 0 4px 12px rgba(12, 26, 40, 0.25); }
+.icon-user { background: var(--ink-navy); box-shadow: 0 4px 12px rgba(20, 48, 74, 0.25); }
+.icon-comment { background: var(--ink-accent); box-shadow: 0 4px 12px rgba(29, 159, 192, 0.28); }
+.icon-view { background: #c9a87c; box-shadow: 0 4px 12px rgba(201, 168, 124, 0.28); }
 
 .stat-info .num { font-size: 26px; font-weight: 800; color: var(--ink-ink); line-height: 1.2; }
 .stat-info .label { font-size: 13px; color: var(--ink-faint); }

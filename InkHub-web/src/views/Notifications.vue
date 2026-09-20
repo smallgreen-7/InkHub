@@ -1,7 +1,7 @@
 <template>
   <div class="notifications-page page-container">
     <div class="page-head">
-      <h2 class="page-title">🔔 我的通知</h2>
+      <h2 class="page-title">我的通知</h2>
       <el-button v-if="list.length" link type="primary" @click="readAll">全部已读</el-button>
     </div>
 

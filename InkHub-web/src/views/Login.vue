@@ -146,17 +146,17 @@ async function doRegister() {
   overflow: hidden;
   padding: 40px 16px;
   background:
-    radial-gradient(700px 400px at 80% -10%, rgba(124, 58, 237, 0.12), transparent 60%),
-    radial-gradient(600px 360px at 10% 110%, rgba(79, 70, 229, 0.12), transparent 55%),
+    radial-gradient(700px 400px at 80% -10%, rgba(90, 209, 230, 0.14), transparent 60%),
+    radial-gradient(600px 360px at 10% 110%, rgba(20, 48, 74, 0.1), transparent 55%),
     var(--ink-bg);
 }
 
 /* 漂浮光斑 */
 .bg-decor { position: absolute; inset: 0; pointer-events: none; }
 .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.45; }
-.blob-1 { width: 340px; height: 340px; background: #818cf8; top: -80px; right: -60px; }
-.blob-2 { width: 300px; height: 300px; background: #c4b5fd; bottom: -100px; left: -40px; }
-.blob-3 { width: 200px; height: 200px; background: #a5b4fc; top: 40%; left: 60%; }
+.blob-1 { width: 340px; height: 340px; background: #7fc7d8; top: -80px; right: -60px; }
+.blob-2 { width: 300px; height: 300px; background: #14304a; bottom: -100px; left: -40px; opacity: 0.28; }
+.blob-3 { width: 200px; height: 200px; background: #a9dbe8; top: 40%; left: 60%; }
 
 .login-card {
   position: relative;
@@ -173,19 +173,16 @@ async function doRegister() {
   display: inline-flex;
   width: 52px; height: 52px;
   align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
-  color: #fff;
+  background: var(--ink-accent-glow);
+  color: var(--ink-abyss);
   border-radius: 14px;
-  box-shadow: var(--ink-shadow-primary);
+  box-shadow: 0 0 22px rgba(90, 209, 230, 0.35);
   margin-bottom: 12px;
 }
-.logo { margin: 0; font-size: 26px; font-weight: 800; color: var(--ink-ink); letter-spacing: -0.5px; }
+.logo { margin: 0; font-family: var(--ink-serif); font-size: 27px; font-weight: 600; color: var(--ink-ink); letter-spacing: 0.01em; }
 .logo em {
   font-style: normal;
-  background: linear-gradient(120deg, var(--ink-primary), var(--ink-accent));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--ink-accent);
 }
 .slogan { margin: 8px 0 0; color: var(--ink-faint); font-size: 13.5px; }
 

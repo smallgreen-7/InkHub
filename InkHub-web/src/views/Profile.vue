@@ -21,14 +21,14 @@
           </div>
         </div>
         <el-button type="primary" class="ink-gradient-btn side-edit" @click="openEdit">
-          ✏️ 编辑资料
+          编辑资料
         </el-button>
       </aside>
 
       <!-- 右侧：内容区 -->
       <main class="profile-main">
         <el-tabs v-model="tab" class="profile-tabs">
-          <el-tab-pane label="📝 我的文章" name="mine">
+          <el-tab-pane label="我的文章" name="mine">
             <div v-if="myArticles.length" class="ink-card table-card">
               <el-table :data="myArticles" stripe>
                 <el-table-column prop="title" label="标题" min-width="240" show-overflow-tooltip />
@@ -56,7 +56,7 @@
             />
           </el-tab-pane>
 
-          <el-tab-pane label="⭐ 我的收藏" name="fav">
+          <el-tab-pane label="我的收藏" name="fav">
             <div v-if="myFavorites.length" class="fav-grid">
               <div
                 v-for="a in myFavorites"
@@ -199,10 +199,10 @@ onMounted(load)
   top: 84px;
 }
 .side-avatar {
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
+  background: var(--ink-deep);
   font-size: 34px;
   font-weight: 700;
-  color: #fff;
+  color: var(--ink-accent-glow);
   box-shadow: var(--ink-shadow);
 }
 .side-name {
@@ -287,10 +287,10 @@ onMounted(load)
 
 /* 编辑弹窗头像 */
 .edit-avatar {
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
+  background: var(--ink-deep);
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: var(--ink-accent-glow);
   cursor: pointer;
 }
 .avatar-tip {

@@ -1,7 +1,7 @@
 <template>
   <div class="admin-article">
     <div class="page-head">
-      <h2 class="page-title">📝 文章管理</h2>
+      <h2 class="page-title">文章管理</h2>
       <el-radio-group v-model="status" size="default" @change="load">
         <el-radio-button :value="null">全部</el-radio-button>
         <el-radio-button :value="0">草稿</el-radio-button>

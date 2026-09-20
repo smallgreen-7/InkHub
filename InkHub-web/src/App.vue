@@ -115,11 +115,11 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="profile">👤 个人中心</el-dropdown-item>
+                  <el-dropdown-item command="profile">个人中心</el-dropdown-item>
                   <el-dropdown-item v-if="userStore.isAdmin" command="admin"
-                    >🛡️ 管理后台</el-dropdown-item
+                    >管理后台</el-dropdown-item
                   >
-                  <el-dropdown-item divided command="logout">🚪 退出登录</el-dropdown-item>
+                  <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -231,14 +231,15 @@ async function onBellCommand(cmd) {
 }
 
 /* 顶部导航：固定 + 玻璃拟态 */
+/* 顶部导航：深海面 + 轻微玻璃感 */
 .nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--ink-border-light);
+  background: rgba(10, 22, 36, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--ink-shadow-nav);
 }
 .nav-inner {
@@ -260,23 +261,21 @@ async function onBellCommand(cmd) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
-  color: #fff;
-  border-radius: 9px;
-  box-shadow: var(--ink-shadow-primary);
+  background: var(--ink-accent-glow);
+  color: var(--ink-abyss);
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(90, 209, 230, 0.35);
 }
 .logo-text {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--ink-ink);
-  letter-spacing: -0.3px;
+  font-family: var(--ink-serif);
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--ink-foam);
+  letter-spacing: 0.02em;
 }
 .logo-text em {
   font-style: normal;
-  background: linear-gradient(120deg, var(--ink-primary), var(--ink-accent));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--ink-accent-glow);
 }
 
 /* 导航链接 */
@@ -290,16 +289,16 @@ async function onBellCommand(cmd) {
   border-radius: 8px;
   font-size: 14.5px;
   font-weight: 500;
-  color: var(--ink-muted);
+  color: var(--ink-foam-dim);
   transition: all 0.2s ease;
 }
 .nav-link:hover {
-  color: var(--ink-primary);
-  background: var(--ink-primary-50);
+  color: var(--ink-accent-glow);
+  background: rgba(90, 209, 230, 0.1);
 }
 .nav-link.active {
-  color: var(--ink-primary);
-  background: var(--ink-primary-50);
+  color: var(--ink-accent-glow);
+  background: rgba(90, 209, 230, 0.12);
   font-weight: 600;
 }
 
@@ -326,69 +325,76 @@ async function onBellCommand(cmd) {
   gap: 8px;
   padding: 4px 10px 4px 4px;
   border-radius: 999px;
-  border: 1px solid var(--ink-border-light);
-  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
 }
 .user-chip:hover {
-  border-color: var(--ink-primary-200);
-  box-shadow: var(--ink-shadow-sm);
+  border-color: var(--ink-accent-glow);
+  background: rgba(90, 209, 230, 0.12);
 }
 .avatar {
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
+  background: var(--ink-accent-glow);
   font-weight: 700;
   font-size: 13px;
-  color: #fff;
+  color: var(--ink-abyss);
 }
 .nickname {
   font-size: 14px;
   font-weight: 500;
-  color: var(--ink-text);
+  color: var(--ink-foam);
   max-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .chevron {
-  color: var(--ink-faint);
+  color: var(--ink-foam-dim);
 }
 
 /* 内容区 */
 .content {
   flex: 1;
-  padding: 28px 0 48px;
+  padding: 40px 0 64px;
 }
 
-/* 页脚 */
+/* 页脚：深海面 */
 .footer {
-  border-top: 1px solid var(--ink-border-light);
-  background: #fff;
-  padding: 22px 0;
-  color: var(--ink-faint);
+  background: linear-gradient(180deg, var(--ink-deep), var(--ink-abyss));
+  padding: 44px 0;
+  color: var(--ink-foam-dim);
   font-size: 13px;
 }
 .footer .page-container {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   align-items: center;
   justify-content: center;
 }
+.footer strong {
+  font-family: var(--ink-serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink-foam);
+  letter-spacing: 0.02em;
+}
 .dot {
-  color: var(--ink-border);
+  color: rgba(255, 255, 255, 0.18);
 }
 .bell {
   display: inline-flex;
   padding: 6px;
   border-radius: 8px;
-  color: var(--ink-muted);
+  color: var(--ink-foam-dim);
   cursor: pointer;
   transition: all 0.2s;
 }
 .bell:hover {
-  color: var(--ink-primary);
-  background: var(--ink-primary-50);
+  color: var(--ink-accent-glow);
+  background: rgba(90, 209, 230, 0.12);
 }
 .bell-menu {
   min-width: 280px;

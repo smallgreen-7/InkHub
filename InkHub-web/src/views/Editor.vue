@@ -1,7 +1,7 @@
 <template>
   <div class="editor-page page-container">
     <div class="editor-head">
-      <h2 class="page-title">{{ isEdit ? '✏️ 编辑文章' : '✍️ 写文章' }}</h2>
+      <h2 class="page-title">{{ isEdit ? '编辑文章' : '写文章' }}</h2>
       <div class="head-actions">
         <el-button size="large" @click="save(0)">存草稿</el-button>
         <el-button type="primary" size="large" class="ink-gradient-btn" @click="save(1)"

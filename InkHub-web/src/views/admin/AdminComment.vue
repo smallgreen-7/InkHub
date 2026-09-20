@@ -1,7 +1,7 @@
 <template>
   <div class="admin-comment">
     <div class="page-head">
-      <h2 class="page-title">💬 评论管理</h2>
+      <h2 class="page-title">评论管理</h2>
       <span class="page-sub">共 {{ list.length }} 条评论</span>
     </div>
 
@@ -65,8 +65,8 @@ onMounted(load)
 .mini-avatar {
   width: 24px; height: 24px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--ink-primary), var(--ink-accent));
-  color: #fff;
+  background: var(--ink-deep);
+  color: var(--ink-accent-glow);
   font-size: 11px;
   font-weight: 700;
   display: inline-flex;
