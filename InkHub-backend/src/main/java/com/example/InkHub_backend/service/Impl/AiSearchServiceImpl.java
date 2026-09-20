@@ -40,7 +40,13 @@ public class AiSearchServiceImpl implements AiSearchService {
             Object title = doc.getMetadata().get("articleTitle");
             Object heading = doc.getMetadata().get("heading");
             if (articleId == null) continue;
-            hits.add(new Hit(((Number) articleId).longValue(),
+            long articleIdVal;
+            if (articleId instanceof Number num) {
+                articleIdVal = num.longValue();
+            } else {
+                articleIdVal = Long.parseLong(articleId.toString().trim());
+            }
+            hits.add(new Hit(articleIdVal,
                     title == null ? "" : title.toString(),
                     heading == null ? "" : heading.toString(),
                     doc.getText(), score));

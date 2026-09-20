@@ -48,4 +48,11 @@ public interface ArticleMapper extends BaseMapper<Article> {
                                        @Param("id") Long id,
                                        @Param("limit") int limit);
 
+    // 按 id 批量取文章卡片（AI 语义搜索召回后回表用，一次查完避免 N+1）
+    List<ArticleVO> selectVOByIds(@Param("ids") List<Long> ids);
+
+    // BM25 全文检索：MySQL FULLTEXT + ngram 分词，返回匹配文章
+    List<Article> selectByFulltext(@Param("query") String query,
+                                  @Param("limit") int limit);
+
 }

@@ -2,9 +2,11 @@ package com.example.InkHub_backend.controller;
 
 import com.example.InkHub_backend.common.BusinessException;
 import com.example.InkHub_backend.common.R;
+import com.example.InkHub_backend.dto.AgentChatRequest;
 import com.example.InkHub_backend.dto.ChatRequest;
 import com.example.InkHub_backend.dto.SummarizeRequest;
 import com.example.InkHub_backend.service.AiChatService;
+import com.example.InkHub_backend.service.AgentChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,6 +30,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class AiController {
 
     private final AiChatService aiChatService;
+    private final AgentChatService agentChatService;
 
     @Operation(summary = "AI 问答", description = "SSE 流式，基于站内文章回答")
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -43,6 +46,16 @@ public class AiController {
     @PostMapping("/summarize")
     public R<String> summarize(@Valid @RequestBody SummarizeRequest req) {
         return R.ok(aiChatService.summarize(req));
+    }
+
+    @Operation(summary = "Agent 对话", description = "SSE 流式，支持 Function Calling 调用站内工具")
+    @PostMapping(value = "/agent/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter agentChat(@Valid @RequestBody AgentChatRequest req) {
+        SseEmitter emitter = new SseEmitter(180_000L);
+        emitter.onTimeout(emitter::complete);
+        emitter.onError(e -> emitter.complete());
+        agentChatService.chat(currentUserId(), req, emitter);
+        return emitter;
     }
 
     private Long currentUserId() {

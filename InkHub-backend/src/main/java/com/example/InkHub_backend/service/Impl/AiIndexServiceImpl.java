@@ -76,7 +76,11 @@ public class AiIndexServiceImpl implements AiIndexService {
             registryList.add(reg);
         }
         // 4. 入库（自动 embedding）+ 登记
-        vectorStore.add(docs);
+        int BATCH = 20;
+        for (int i = 0; i < docs.size(); i += BATCH) {
+            List<Document> batch = docs.subList(i, Math.min(i + BATCH, docs.size()));
+            vectorStore.add(batch);
+        }
         registryList.forEach(registryMapper::insert);
         log.info("AI 索引完成 articleId={} chunks={}", articleId, chunks.size());
     }

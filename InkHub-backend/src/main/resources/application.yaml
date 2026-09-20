@@ -14,12 +14,14 @@ spring:
         options:
           model: deepseek-v4-flash
           temperature: 0.3
+
     openai:
       base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
       api-key: ${DASHSCOPE_API_KEY}
       embedding:
         options:
           model: qwen3.7-text-embedding-flash
+
     vectorstore:
       qdrant:
         host: localhost
@@ -99,3 +101,7 @@ ai:
   chunk-overlap: 100
   rate-limit: 20
   search-top-n: 20
+  # Rerank 精排配置（阿里百炼 gte-rerank）
+  rerank-model: qwen3-rerank
+  rerank-base-url: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
+  rerank-api-key: ${DASHSCOPE_API_KEY}

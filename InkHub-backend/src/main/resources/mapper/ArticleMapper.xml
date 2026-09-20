@@ -85,22 +85,54 @@
         ORDER BY article_count DESC
     </select>
 
-    <!-- 同分类推荐：已发布、排除自己、按浏览量倒序（相关文章） -->
+    <!-- 同分类推荐：已发布、排除自己、按浏览量倒序（相关文章）
+         必须带上 category_name / author_name，否则前端卡片作者、分类是空的 -->
     <select id="selectRelatedByCategory" resultType="com.example.InkHub_backend.vo.ArticleVO">
-        SELECT id, title, summary, cover, view_count, like_count, comment_count
-        FROM article
-        WHERE category_id = #{categoryId} AND status = 1 AND id != #{id}
-        ORDER BY view_count DESC
+        SELECT a.id, a.title, a.summary, a.cover, a.category_id, c.name AS category_name,
+               a.author_id, u.nickname AS author_name, a.top, a.view_count,
+               a.like_count, a.favorite_count, a.comment_count, a.publish_time
+        FROM article a
+                 LEFT JOIN user u ON u.id = a.author_id
+                 LEFT JOIN category c ON c.id = a.category_id
+        WHERE a.category_id = #{categoryId} AND a.status = 1 AND a.id != #{id}
+        ORDER BY a.view_count DESC
         LIMIT #{limit}
     </select>
 
     <!-- 同标签推荐：已发布、排除自己、按浏览量倒序（相关文章） -->
     <select id="selectRelatedByTag" resultType="com.example.InkHub_backend.vo.ArticleVO">
-        SELECT a.id, a.title, a.summary, a.cover, a.view_count, a.like_count, a.comment_count
+        SELECT a.id, a.title, a.summary, a.cover, a.category_id, c.name AS category_name,
+               a.author_id, u.nickname AS author_name, a.top, a.view_count,
+               a.like_count, a.favorite_count, a.comment_count, a.publish_time
         FROM article a
                  JOIN article_tag at ON at.article_id = a.id
+                 LEFT JOIN user u ON u.id = a.author_id
+                 LEFT JOIN category c ON c.id = a.category_id
         WHERE at.tag_id = #{tagId} AND a.status = 1 AND a.id != #{id}
         ORDER BY a.view_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 按 id 批量取文章卡片（AI 语义搜索召回后回表用，一次查完避免 N+1） -->
+    <select id="selectVOByIds" resultType="com.example.InkHub_backend.vo.ArticleVO">
+        SELECT a.id, a.title, a.summary, a.cover, a.category_id, c.name AS category_name,
+               a.author_id, u.nickname AS author_name, a.top, a.view_count,
+               a.like_count, a.favorite_count, a.comment_count, a.publish_time, a.status
+        FROM article a
+                 LEFT JOIN user u ON u.id = a.author_id
+                 LEFT JOIN category c ON c.id = a.category_id
+        WHERE a.id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <!-- BM25 全文检索：MySQL FULLTEXT + ngram 分词器
+         MATCH ... AGAINST 返回相关性分数（BM25 算法），IN NATURAL LANGUAGE MODE 适合短查询 -->
+    <select id="selectByFulltext" resultType="com.example.InkHub_backend.entity.Article">
+        SELECT id, title, summary, content_md, view_count, like_count, favorite_count, comment_count
+        FROM article
+        WHERE status = 1
+          AND MATCH(title, content_md) AGAINST(#{query} IN NATURAL LANGUAGE MODE)
+        ORDER BY MATCH(title, content_md) AGAINST(#{query} IN NATURAL LANGUAGE MODE) DESC
         LIMIT #{limit}
     </select>
 

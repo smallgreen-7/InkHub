@@ -12,4 +12,13 @@ public class RedisKeys {
     public static String aiChatRate(Long userId, String minute) {
         return "ai:chat:rate:" + userId + ":" + minute;
     }
+
+    // Agent 对话历史：每用户一个 List，key: ai:agent:history:{userId}
+    public static String agentHistory(Long userId) {
+        return "ai:agent:history:" + userId;
+    }
+
+    public static String agentHistory(Long userId, String sessionId) {
+        return "ai:agent:history:" + userId + ":" + sessionId;
+    }
 }

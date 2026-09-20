@@ -245,28 +245,23 @@ public class ArticleServiceImpl implements ArticleService {
         if (related.isEmpty()) {
             return List.of();
         }
-        List<Long> ids = related.stream().map(ChatSourceVO::getArticleId).toList();
-        Map<Long, Article> byId = articleMapper.selectBatchIds(ids).stream()
-                .collect(Collectors.toMap(Article::getId, a -> a));
+        // 同一篇文章可能命中多个 chunk：先去重，再一次性回表（带作者/分类）
+        List<Long> ids = related.stream()
+                .map(ChatSourceVO::getArticleId)
+                .distinct()
+                .toList();
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, ArticleVO> byId = articleMapper.selectVOByIds(ids).stream()
+                .filter(v -> v.getStatus() != null && v.getStatus() == 1)   // 只返回已发布
+                .collect(Collectors.toMap(ArticleVO::getId, v -> v));
         List<ArticleVO> result = new ArrayList<>();
         for (ChatSourceVO source : related) {
-            Article a = byId.get(source.getArticleId());
-            if (a == null || a.getStatus() == null || a.getStatus() != 1) {
+            ArticleVO vo = byId.remove(source.getArticleId());   // remove 顺带按召回顺序去重
+            if (vo == null) {
                 continue;
             }
-            ArticleVO vo = new ArticleVO();
-            vo.setId(a.getId());
-            vo.setTitle(a.getTitle());
-            vo.setSummary(a.getSummary());
-            vo.setCover(a.getCover());
-            vo.setCategoryId(a.getCategoryId());
-            vo.setAuthorId(a.getAuthorId());
-            vo.setTop(a.getTop());
-            vo.setViewCount(a.getViewCount());
-            vo.setLikeCount(a.getLikeCount());
-            vo.setFavoriteCount(a.getFavoriteCount());
-            vo.setCommentCount(a.getCommentCount());
-            vo.setPublishTime(a.getPublishTime());
             fillTags(vo);
             result.add(vo);
         }

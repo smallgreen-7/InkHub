@@ -9,12 +9,15 @@ import com.example.InkHub_backend.mapper.ArticleMapper;
 import com.example.InkHub_backend.service.AiChatService;
 import com.example.InkHub_backend.service.AiSearchService;
 import com.example.InkHub_backend.service.AiSearchService.Hit;
+import com.example.InkHub_backend.service.HybridSearchService;
+import com.example.InkHub_backend.service.RerankService;
 import com.example.InkHub_backend.utils.RedisKeys;
 import com.example.InkHub_backend.vo.ChatSourceVO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
@@ -38,16 +41,34 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AiChatServiceImpl implements AiChatService {
 
     private static final DateTimeFormatter MINUTE_FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
     private final ChatClient chatClient;
     private final AiSearchService aiSearchService;
+    private final HybridSearchService hybridSearchService;
+    private final RerankService rerankService;
     private final ArticleMapper articleMapper;
     private final AiProperties props;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public AiChatServiceImpl(
+            @Qualifier("chatClient") ChatClient chatClient,
+            AiSearchService aiSearchService,
+            HybridSearchService hybridSearchService,
+            RerankService rerankService,
+            ArticleMapper articleMapper,
+            AiProperties props,
+            RedisTemplate<String, Object> redisTemplate) {
+        this.chatClient = chatClient;
+        this.aiSearchService = aiSearchService;
+        this.hybridSearchService = hybridSearchService;
+        this.rerankService = rerankService;
+        this.articleMapper = articleMapper;
+        this.props = props;
+        this.redisTemplate = redisTemplate;
+    }
 
     /** ⚠️ 项目 Boot 4 的 webmvc starter 不提供 ObjectMapper Bean，自建 static 单例（线程安全） */
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -60,9 +81,10 @@ public class AiChatServiceImpl implements AiChatService {
             String question = req.getQuestion().strip();
             if (question.isEmpty()) throw new BusinessException("问题不能为空");
 
-            // 1. 检索
-            List<Hit> hits = aiSearchService.searchChunks(
-                    question, props.getTopK(), props.getMaxChunkPerArticle(), props.getMinScore());
+            // 1. 混合检索（BM25 + 向量 → RRF 融合）→ Rerank 精排
+            List<Hit> rawHits = hybridSearchService.hybridSearch(
+                    question, props.getTopK() * 3, props.getMaxChunkPerArticle(), props.getMinScore());
+            List<Hit> hits = rerankService.rerank(question, rawHits, props.getTopK());
             // 文章页上下文：把当前文章内容拼进资料（"和文章对话"体验）
             StringBuilder articleContext = new StringBuilder();
             if ("article".equals(req.getContextType()) && req.getArticleId() != null) {
@@ -85,7 +107,10 @@ public class AiChatServiceImpl implements AiChatService {
                     .user(userPrompt)
                     .stream()
                     .content();
-            flux.doOnNext(delta -> sendQuietly(emitter, Map.of("type", "delta", "text", delta)))
+            flux.doOnNext(delta -> {
+                        sendQuietly(emitter, Map.of("type", "delta", "text", delta));
+                        try { Thread.sleep(30); } catch (InterruptedException ignored) {} // 30ms/字
+                    })
                     .doOnComplete(() -> {
                         sendQuietly(emitter, Map.of("type", "sources", "sources", toSources(hits)));
                         sendQuietly(emitter, Map.of("type", "done"));
