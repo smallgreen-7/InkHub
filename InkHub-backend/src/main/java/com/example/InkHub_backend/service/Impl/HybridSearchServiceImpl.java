@@ -1,5 +1,6 @@
 package com.example.InkHub_backend.service.Impl;
 
+import com.example.InkHub_backend.config.AiProperties;
 import com.example.InkHub_backend.service.AiSearchService;
 import com.example.InkHub_backend.service.AiSearchService.Hit;
 import com.example.InkHub_backend.service.Bm25SearchService;
@@ -24,20 +25,25 @@ public class HybridSearchServiceImpl implements HybridSearchService {
 
     private final AiSearchService aiSearchService;
     private final Bm25SearchService bm25SearchService;
+    private final AiProperties props;
 
     @Override
     public List<Hit> hybridSearch(String question, int topK, int maxPerArticle, double minScore) {
-        // 1. 两路召回（topK 就是候选数，上层已传 topK*3；这里不再乘）
+        // 1. 两路召回（topK 就是候选数，上层已传 topK*3）
+        //    BM25 额外限流：中文 ngram 分词召回天然过宽（17 篇能召回 15 篇），不限制会把向量强命中稀释掉
+        int bm25Limit = Math.max(1, Math.min(topK, props.getBm25TopN()));
         List<Hit> vectorHits = aiSearchService.searchChunks(question, topK, maxPerArticle, minScore);
-        List<Hit> bm25Hits = bm25SearchService.searchArticles(question, topK);
+        List<Hit> bm25Hits = bm25SearchService.searchArticles(question, bm25Limit);
 
-        // 2. RRF：按文章 ID 聚合排名分
+        // 2. RRF：按文章 ID 聚合排名分（加权：向量 1.0 / BM25 0.3）
         Map<Long, Double> rrfScores = new HashMap<>();
         for (int i = 0; i < vectorHits.size(); i++) {
-            rrfScores.merge(vectorHits.get(i).articleId(), 1.0 / (RRF_K + i + 1), Double::sum);
+            rrfScores.merge(vectorHits.get(i).articleId(),
+                    props.getVectorWeight() / (RRF_K + i + 1), Double::sum);
         }
         for (int i = 0; i < bm25Hits.size(); i++) {
-            rrfScores.merge(bm25Hits.get(i).articleId(), 1.0 / (RRF_K + i + 1), Double::sum);
+            rrfScores.merge(bm25Hits.get(i).articleId(),
+                    props.getBm25Weight() / (RRF_K + i + 1), Double::sum);
         }
 
         // 3. 每篇文章选最佳代表块（向量命中优先取最高分，否则用 BM25 的）
@@ -70,7 +76,9 @@ public class HybridSearchServiceImpl implements HybridSearchService {
             }
         }
 
-        log.info("Hybrid search: vector={}块, bm25={}篇, 融合输出={}篇", vectorHits.size(), bm25Hits.size(), result.size());
+        log.info("Hybrid search: vector={}块, bm25={}篇(限{}), 融合输出={}篇, 权重 v={}/b={}",
+                vectorHits.size(), bm25Hits.size(), bm25Limit, result.size(),
+                props.getVectorWeight(), props.getBm25Weight());
         return result;
     }
 }

@@ -22,6 +22,15 @@ public class AiProperties {
 
     private int searchTopN = 20;
 
+    /** 混合检索 RRF 融合权重：向量路权重（强命中优先，避免被 BM25 噪声稀释） */
+    private double vectorWeight = 1.0;
+
+    /** 混合检索 RRF 融合权重：BM25 路权重（中文 ngram 召回过宽，降权） */
+    private double bm25Weight = 0.3;
+
+    /** BM25 路最多取多少篇候选（防止一次召回近全库） */
+    private int bm25TopN = 5;
+
 
     private String rerankModel = "qwen3-rerank";
 

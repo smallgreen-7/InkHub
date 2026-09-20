@@ -101,6 +101,10 @@ ai:
   chunk-overlap: 100
   rate-limit: 20
   search-top-n: 20
+  # 混合检索融合参数（2026-09-20 调优：BM25 中文 ngram 召回过宽，降权 + 限候选）
+  vector-weight: 1.0
+  bm25-weight: 0.3
+  bm25-top-n: 5
   # Rerank 精排配置（阿里百炼 gte-rerank）
   rerank-model: qwen3-rerank
   rerank-base-url: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
