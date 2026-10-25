@@ -16,7 +16,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // file: 协议只认绝对路径；把 ./uploads 转成绝对路径再拼，否则图片 404
+        // file:协议只认绝对路径，所以把 ./uploads 转成绝对路径再拼，不然图片会报404
         String location = new File(uploadDir).getAbsoluteFile().toURI().toString();
         if (!location.endsWith("/")) {
             location += "/";

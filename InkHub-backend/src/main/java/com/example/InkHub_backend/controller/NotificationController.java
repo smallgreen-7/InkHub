@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "通知接口", description = "站内通知的列表、未读数、已读（需登录）")
+@Tag(name = "通知接口", description = "站内通知的列表、未读数、已读（需要登录）")
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
@@ -20,6 +20,7 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    //通用取当前登录的用户ID
     private Long currentUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof Long id) {

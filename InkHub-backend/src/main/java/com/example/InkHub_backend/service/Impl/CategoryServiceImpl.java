@@ -14,7 +14,7 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryMapper categoryMapper;
-    private final ArticleMapper articleMapper;   // 用 ArticleMapper 手写 SQL 查文章数（Step 11 建）
+    private final ArticleMapper articleMapper;   // 用 ArticleMapper 手写 SQL 查文章数
 
     @Override
     public List<CategoryVO> listWithCount() {

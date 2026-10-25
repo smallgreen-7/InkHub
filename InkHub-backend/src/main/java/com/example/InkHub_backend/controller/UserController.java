@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "用户接口", description = "当前登录用户的个人信息、资料修改、收藏列表（全部需登录）")
+@Tag(name = "用户接口", description = "当前登录用户的个人信息、资料修改、收藏列表")
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -33,7 +33,7 @@ public class UserController {
         throw new BusinessException(401, "未登录");
     }
 
-    // 个人信息
+    // 看个人信息
     @Operation(summary = "我的信息", description = "需登录；返回当前用户基本信息（含昵称、头像、角色）")
     @GetMapping("/me")
     public R<LoginVO> me() {

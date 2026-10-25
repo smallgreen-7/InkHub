@@ -2,6 +2,7 @@ package com.example.InkHub_backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.InkHub_backend.entity.Article;
+import com.example.InkHub_backend.vo.ArticleBm25VO;
 import com.example.InkHub_backend.vo.ArticleDetailVO;
 import com.example.InkHub_backend.vo.ArticleVO;
 import com.example.InkHub_backend.vo.CategoryVO;
@@ -51,8 +52,8 @@ public interface ArticleMapper extends BaseMapper<Article> {
     // 按 id 批量取文章卡片（AI 语义搜索召回后回表用，一次查完避免 N+1）
     List<ArticleVO> selectVOByIds(@Param("ids") List<Long> ids);
 
-    // BM25 全文检索：MySQL FULLTEXT + ngram 分词，返回匹配文章
-    List<Article> selectByFulltext(@Param("query") String query,
-                                  @Param("limit") int limit);
+    // BM25 全文检索：MySQL FULLTEXT + ngram 分词，返回匹配文章及相关度分数
+    List<ArticleBm25VO> selectByFulltext(@Param("query") String query,
+                                         @Param("limit") int limit);
 
 }

@@ -23,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
@@ -70,7 +71,6 @@ public class AiChatServiceImpl implements AiChatService {
         this.redisTemplate = redisTemplate;
     }
 
-    /** ⚠️ 项目 Boot 4 的 webmvc starter 不提供 ObjectMapper Bean，自建 static 单例（线程安全） */
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
@@ -90,13 +90,14 @@ public class AiChatServiceImpl implements AiChatService {
             if ("article".equals(req.getContextType()) && req.getArticleId() != null) {
                 Article article = articleMapper.selectById(req.getArticleId());
                 if (article != null && article.getStatus() != null && article.getStatus() == 1) {
-                    articleContext.append("用户正在阅读站内文章《").append(article.getTitle())
+                    articleContext.append("用户正在阅读站内文章《")
+                            .append(article.getTitle())
                             .append("》，若问题与该文章相关，优先依据下面的文章内容回答：\n")
                             .append(truncate(article.getContentMd(), 4000)).append("\n\n");
                 }
             }
 
-            // 2. 组装提示词：有资料走 RAG 严格模式；无资料走宽松模式（自然回应但不编造站内内容）
+            // 2. 组装提示词：有资料走 RAG 严格模式；无资料走宽松模式
             boolean hasMaterial = !hits.isEmpty() || articleContext.length() > 0;
             String userPrompt = hasMaterial
                     ? buildPrompt(question, hits, articleContext.toString(), req.getHistory())
@@ -107,10 +108,9 @@ public class AiChatServiceImpl implements AiChatService {
                     .user(userPrompt)
                     .stream()
                     .content();
-            flux.doOnNext(delta -> {
-                        sendQuietly(emitter, Map.of("type", "delta", "text", delta));
-                        try { Thread.sleep(30); } catch (InterruptedException ignored) {} // 30ms/字
-                    })
+            Disposable disposable = flux.doOnNext(delta ->
+                        sendQuietly(emitter, Map.of("type", "delta", "text", delta))
+                    )
                     .doOnComplete(() -> {
                         sendQuietly(emitter, Map.of("type", "sources", "sources", toSources(hits)));
                         sendQuietly(emitter, Map.of("type", "done"));
@@ -122,6 +122,10 @@ public class AiChatServiceImpl implements AiChatService {
                         emitter.complete();
                     })
                     .subscribe();   // 异步订阅，不阻塞
+            // 用户断开 / 超时 / 错误时，取消上游订阅，避免模型继续生成浪费 token
+            emitter.onCompletion(disposable::dispose);
+            emitter.onTimeout(disposable::dispose);
+            emitter.onError(e -> disposable.dispose());
         } catch (BusinessException e) {
             sendQuietly(emitter, Map.of("type", "error", "msg", e.getMessage()));
             emitter.complete();

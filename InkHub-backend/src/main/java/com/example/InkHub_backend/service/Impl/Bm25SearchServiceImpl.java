@@ -1,9 +1,9 @@
 package com.example.InkHub_backend.service.Impl;
 
-import com.example.InkHub_backend.entity.Article;
 import com.example.InkHub_backend.mapper.ArticleMapper;
 import com.example.InkHub_backend.service.AiSearchService.Hit;
 import com.example.InkHub_backend.service.Bm25SearchService;
+import com.example.InkHub_backend.vo.ArticleBm25VO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,13 +24,15 @@ public class Bm25SearchServiceImpl implements Bm25SearchService {
 
     @Override
     public List<Hit> searchArticles(String query, int limit) {
-        List<Article> articles = articleMapper.selectByFulltext(query, limit);
+        List<ArticleBm25VO> articles = articleMapper.selectByFulltext(query, limit);
         List<Hit> hits = new ArrayList<>();
-        for (Article a : articles) {
+        for (ArticleBm25VO a : articles) {
             String content = a.getSummary() != null && !a.getSummary().isBlank()
                     ? a.getSummary()
                     : truncate(a.getContentMd(), 600);
-            hits.add(new Hit(a.getId(), a.getTitle(), "", content, 0.5));
+            // 分数用 MySQL 全文检索返回的真实相关度，不再硬编码
+            double score = (a.getScore() != null && a.getScore() > 0) ? a.getScore() : 0.0;
+            hits.add(new Hit(a.getId(), a.getTitle(), "", content, score));
         }
         return hits;
     }

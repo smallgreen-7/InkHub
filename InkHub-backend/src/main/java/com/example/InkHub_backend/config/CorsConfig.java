@@ -6,7 +6,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-// 跨域配置：前后端分离必须（虽然 vite 有 proxy，后端也配上双保险）
+// 跨域配置：前后端分离
 @Configuration
 public class CorsConfig {
 

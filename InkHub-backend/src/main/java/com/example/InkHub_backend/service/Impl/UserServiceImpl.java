@@ -25,8 +25,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(RegisterDTO dto) {
-        Long count = userMapper.selectCount(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, dto.getUsername()));
+        Long count = userMapper.selectCount(new LambdaQueryWrapper<User>().eq(User::getUsername, dto.getUsername()));
         if (count > 0) {
             throw new BusinessException("用户名已存在");
         }
@@ -44,8 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginVO login(LoginDTO dto) {
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, dto.getUsername()));
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, dto.getUsername()));
         if (user == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new BusinessException("用户名或密码错误");
         }

@@ -18,10 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 /**
- * AI 接口：SecurityConfig 未放行 /api/ai/**，默认 anyRequest().authenticated()（要登录）
- * SSE 事件：{"type":"delta"|"sources"|"done"|"error", ...}
+ * AI 接口。需登录之后才能使用
  */
 @Tag(name = "AI 助手接口")
 @RestController

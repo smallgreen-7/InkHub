@@ -8,19 +8,13 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 评论实体，对应数据库表 comment
- *
- * <p>parentId 实现二级评论（树形结构）：
- * - NULL = 一级评论（直接评文章）；
- * - 有值 = 回复某条评论（存被回复评论的 id）。
- *
- * @author InkHub
+ * 评论实体，对应表 comment
  */
 @Data
 @TableName("comment")
 public class Comment {
 
-    /** 主键，自增 */
+    /** 主键*/
     @TableId(type = IdType.AUTO)
     private Long id;
 

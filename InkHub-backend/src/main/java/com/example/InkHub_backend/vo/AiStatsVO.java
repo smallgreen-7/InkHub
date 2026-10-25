@@ -2,7 +2,7 @@ package com.example.InkHub_backend.vo;
 
 import lombok.Data;
 
-/** AI 索引统计（管理端展示） */
+/** 查看 AI 知识库状态" */
 @Data
 public class AiStatsVO {
     /** 已发布文章数 */

@@ -6,21 +6,15 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-
 /**
- * 点赞实体，对应数据库表 article_like
- *
- * <p>表上有唯一索引 UNIQUE(article_id, user_id)：
- * 同一用户对同一文章只能有一条点赞记录，
- * 重复点击靠唯一索引兜底，天然幂等（面试亮点）。
- *
- * @author InkHub
+ * 点赞实体，对应表 article_like
+ * 表上有唯一索引 UNIQUE(article_id, user_id)：
  */
 @Data
 @TableName("article_like")
 public class ArticleLike {
 
-    /** 主键，自增 */
+    /** 主键 */
     @TableId(type = IdType.AUTO)
     private Long id;
 

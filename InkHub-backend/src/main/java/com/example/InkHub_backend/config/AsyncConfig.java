@@ -9,7 +9,7 @@ import org.springframework.security.core.parameters.P;
 
 import java.util.concurrent.Executor;
 
-/** 异步线程池：AI 索引专用（embedding 调外部 API 慢，不占业务线程） */
+/** 建立异步线程池：AI 索引专用（embedding 调外部 API 慢，不占业务线程） */
 @Configuration
 @EnableAsync
 public class AsyncConfig {

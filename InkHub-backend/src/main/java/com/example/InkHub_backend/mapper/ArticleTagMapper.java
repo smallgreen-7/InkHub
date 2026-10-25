@@ -18,7 +18,7 @@ public interface ArticleTagMapper extends BaseMapper<ArticleTag> {
     """)
     List<String> selectTagNamesByArticle(@Param("articleId") Long articleId);
 
-    // 查一篇文章的所有标签 id（详情页编辑回填用）
+    // 查一篇文章的所有标签 id
     @Select("SELECT tag_id FROM article_tag WHERE article_id = #{articleId} ORDER BY id")
     List<Long> selectTagIdsByArticle(@Param("articleId") Long articleId);
 }

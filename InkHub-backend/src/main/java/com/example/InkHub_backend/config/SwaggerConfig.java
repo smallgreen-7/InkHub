@@ -23,7 +23,7 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("InkHub 知识博客 API")
                         .version("1.0.0")
-                        .description("文章 / 评论 / 点赞收藏 / 统计接口文档\n\n"
+                        .description("文章 / 评论 / 点赞收藏 / 统计接口文档\n"
                                 + "🔐 需要登录的接口：先在登录接口调试获取 token，"
                                 + "点右上角 Authorize 填入（不要带 Bearer 前缀）")
                         .contact(new Contact().name("InkHub Team"))

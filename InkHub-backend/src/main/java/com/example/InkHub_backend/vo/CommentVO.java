@@ -5,9 +5,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-// 评论项：评论 + 评论人昵称/头像
+// 评论页：评论人昵称/头像 + 评论内容
 @Data
-@Schema(description = "评论项")
+@Schema(description = "评论页")
 public class CommentVO {
     @Schema(description = "评论 id")
     private Long id;
@@ -19,7 +19,7 @@ public class CommentVO {
     private String nickname;
     @Schema(description = "评论人头像")
     private String avatar;
-    @Schema(description = "父评论 id（二级回复有值，一级评论为空）")
+    @Schema(description = "父评论 id（二级回复有值，一级评论为null）")
     private Long parentId;
     @Schema(description = "评论内容")
     private String content;

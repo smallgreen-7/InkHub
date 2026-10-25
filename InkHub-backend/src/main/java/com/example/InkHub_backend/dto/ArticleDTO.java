@@ -14,26 +14,26 @@ public class ArticleDTO {
 
     @NotBlank(message = "标题不能为空")
     @Size(max = 100, message = "标题最长 100 字")
-    @Schema(description = "标题", example = "我的第一篇文章", maxLength = 100)
+    @Schema(description = "标题", maxLength = 100)
     private String title;
 
     @Size(max = 255, message = "摘要最长 255 字")
-    @Schema(description = "摘要（列表页展示，选填）", example = "这是一篇关于…的文章", maxLength = 255)
+    @Schema(description = "摘要（列表页展示，选填）", maxLength = 255)
     private String summary;
 
     @NotBlank(message = "内容不能为空")
-    @Schema(description = "Markdown 正文", example = "# 标题\n\n正文内容…")
+    @Schema(description = "Markdown 正文")
     private String contentMd;
 
-    @Schema(description = "封面图 URL（选填）")
+    @Schema(description = "封面图 URL")
     private String cover;
 
-    @Schema(description = "分类 id（选填）")
+    @Schema(description = "分类 id")
     private Long categoryId;
 
-    @Schema(description = "状态：0 存草稿 / 1 直接发布", example = "1")
-    private Integer status;          // 0 存草稿 / 1 直接发布
+    @Schema(description = "状态：0 存草稿 / 1 直接发布")
+    private Integer status;
 
-    @Schema(description = "标签 id 列表（选填）")
-    private List<Long> tagIds;       // 标签 id 列表（可空）
+    @Schema(description = "标签 id 列表")
+    private List<Long> tagIds;
 }

@@ -7,7 +7,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-// 站内通知实体，对应表 notification
+/**
+ * 站内通知实体，对应表notification
+ */
 @Data
 @TableName("notification")
 public class Notification {
@@ -24,7 +26,7 @@ public class Notification {
     /** 类型：1 评论回复 / 2 点赞 / 3 收藏 */
     private Integer type;
 
-    /** 通知文案（冗余存储） */
+    /** 通知文案 */
     private String content;
 
     /** 相关文章 id */
@@ -36,5 +38,6 @@ public class Notification {
     /** 0 未读 / 1 已读 */
     private Integer isRead;
 
+    /** 评论/点赞/收藏 时间 */
     private LocalDateTime createTime;
 }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -21,6 +22,11 @@ public class DashScopeRerankServiceImpl implements RerankService {
 
     private final AiProperties props;
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    /** 连接超时：百炼不可达时必须快速失败，否则请求线程会被一直占住 */
+    private static final int CONNECT_TIMEOUT_MS = 3_000;
+    /** 读取超时：rerank 正常几百毫秒，超过 15s 直接降级走原顺序 */
+    private static final int READ_TIMEOUT_MS = 15_000;
 
     @Override
     public List<Hit> rerank(String query, List<Hit> hits, int topK) {
@@ -36,18 +42,25 @@ public class DashScopeRerankServiceImpl implements RerankService {
                 documents.add(truncate(hit.content(), 1500));
             }
 
-            // 2. 构造请求体（DashScope 原生格式）
+            // 2. 构造请求体（DashScope 原生格式）--JSON格式
             ObjectNode requestBody = MAPPER.createObjectNode();
             requestBody.put("model", props.getRerankModel());
+
             ObjectNode input = requestBody.putObject("input");
             input.put("query", truncate(query, 500));
             input.putPOJO("documents", documents);
+
             ObjectNode parameters = requestBody.putObject("parameters");
             parameters.put("top_n", topK);
             parameters.put("return_documents", false);
 
 
+            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            requestFactory.setReadTimeout(READ_TIMEOUT_MS);
+
             RestClient client = RestClient.builder()
+                    .requestFactory(requestFactory)
                     .defaultHeader("Authorization", "Bearer " + props.getRerankApiKey())
                     .defaultHeader("Content-Type", "application/json")
                     .build();

@@ -12,3 +12,4 @@ public interface AiChatService {
     /** AI 摘要（编辑器用） */
     String summarize(SummarizeRequest req);
 }
+

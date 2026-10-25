@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Schema(description = "登录返回结果")
 public class LoginVO {
-    @Schema(description = "JWT token（后续请求放 Authorization 头：Bearer token）")
+    @Schema(description = "JWT token")
     private String token;
     @Schema(description = "用户 id")
     private Long userId;

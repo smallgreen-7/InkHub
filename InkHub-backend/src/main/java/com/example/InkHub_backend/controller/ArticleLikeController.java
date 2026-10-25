@@ -14,13 +14,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
-// 点赞：点赞/取消/状态。收藏逻辑一模一样，复制改表名即可
+// 点赞：点赞/取消/状态。
 @Tag(name = "点赞接口", description = "文章的点赞/取消点赞/点赞状态（全部需登录）")
 @RestController
 @RequestMapping("/api/articles/{articleId}/like")
@@ -55,7 +56,7 @@ public class ArticleLikeController {
             like.setCreateTime(LocalDateTime.now());
             try {
                 likeMapper.insert(like);
-            } catch (Exception e) {
+            } catch (DuplicateKeyException e) {
                 // 并发下唯一索引冲突：说明别人刚点过，直接忽略
                 return R.ok();
             }

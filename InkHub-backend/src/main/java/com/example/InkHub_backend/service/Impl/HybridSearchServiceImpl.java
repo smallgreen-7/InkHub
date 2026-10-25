@@ -29,8 +29,7 @@ public class HybridSearchServiceImpl implements HybridSearchService {
 
     @Override
     public List<Hit> hybridSearch(String question, int topK, int maxPerArticle, double minScore) {
-        // 1. 两路召回（topK 就是候选数，上层已传 topK*3）
-        //    BM25 额外限流：中文 ngram 分词召回天然过宽（17 篇能召回 15 篇），不限制会把向量强命中稀释掉
+        // 1. 两路召回：向量检索和BM25
         int bm25Limit = Math.max(1, Math.min(topK, props.getBm25TopN()));
         List<Hit> vectorHits = aiSearchService.searchChunks(question, topK, maxPerArticle, minScore);
         List<Hit> bm25Hits = bm25SearchService.searchArticles(question, bm25Limit);
@@ -48,14 +47,14 @@ public class HybridSearchServiceImpl implements HybridSearchService {
 
         // 3. 每篇文章选最佳代表块（向量命中优先取最高分，否则用 BM25 的）
         Map<Long, Hit> bestBlockByArticle = new HashMap<>();
-        // 3a. 先放向量块：同篇取相似度最高的（后面的 merge 用 score 比较）
+        // 3.1先放向量块：同篇取相似度最高的（后面的 merge 用 score 比较）
         for (Hit hit : vectorHits) {
             Hit existing = bestBlockByArticle.get(hit.articleId());
             if (existing == null || hit.score() > existing.score()) {
                 bestBlockByArticle.put(hit.articleId(), hit);
             }
         }
-        // 3b. 向量没覆盖到的文章，用 BM25 的内容兜底
+        // 3.2 向量没覆盖到的文章，用 BM25 的内容兜底
         for (Hit hit : bm25Hits) {
             bestBlockByArticle.putIfAbsent(hit.articleId(), hit);
         }

@@ -6,17 +6,14 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-
 /**
- * 文章分类实体，对应数据库表 category
- *
- * @author InkHub
+ * 文章分类实体，对应表 category
  */
 @Data
 @TableName("category")
 public class Category {
 
-    /** 主键，自增 */
+    /** 主键 */
     @TableId(type = IdType.AUTO)
     private Long id;
 

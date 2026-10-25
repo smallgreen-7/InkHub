@@ -7,10 +7,12 @@ import lombok.Data;
 /** Agent 对话请求体 */
 @Data
 public class AgentChatRequest {
-    @NotBlank(message = "问题不能为空")
+    @NotBlank(message = "问题不能为空")       //@NotBlank后端参数校验注解，字符串不能为null，不能是空字符串，不能全为空格
     @Size(max = 500, message = "问题最长 500 字")
     private String question;
 
-    /** 会话 id（前端生成 UUID，清空对话 = 换新 id；空则后端退化为单会话） */
+    /**
+     * 会话 id（前端生成 UUID，清空对话 = 换新 id；空则后端退化为单会话）
+     */
     private String sessionId;
 }

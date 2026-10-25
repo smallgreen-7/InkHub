@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 public class AiProperties {
     private int topK = 5;
 
+    //最低相似度分
     private double minScore = 0.35;
 
     private int maxChunkPerArticle = 2;

@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-// 收藏：收藏/取消/状态（逻辑与点赞一致，表换 favorite、计数换 favorite_count）
+// 收藏：收藏/取消/状态（逻辑与点赞一致）
 @Tag(name = "收藏接口", description = "文章的收藏/取消收藏/收藏状态/我的收藏列表（全部需登录）")
 @RestController
 @RequestMapping("/api/articles/{articleId}/favorite")
@@ -48,8 +48,8 @@ public class FavoriteController {
     public R<Void> favorite(@Parameter(description = "文章 id") @PathVariable Long articleId) {
         Long userId = currentUserId();
         Long count = favoriteMapper.selectCount(new LambdaQueryWrapper<Favorite>()
-                .eq(Favorite::getArticleId, articleId)
-                .eq(Favorite::getUserId, userId));
+                        .eq(Favorite::getArticleId, articleId)
+                        .eq(Favorite::getUserId, userId));
         if (count == 0) {
             Favorite favorite = new Favorite();
             favorite.setArticleId(articleId);
@@ -58,7 +58,7 @@ public class FavoriteController {
             try {
                 favoriteMapper.insert(favorite);
             } catch (Exception e) {
-                // 并发下唯一索引冲突：说明别人刚收藏过，忽略
+                // 并发下唯一索引冲突：说明别人刚收藏过
                 return R.ok();
             }
             articleMapper.update(null, new LambdaUpdateWrapper<Article>()

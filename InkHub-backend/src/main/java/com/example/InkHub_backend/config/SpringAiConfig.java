@@ -4,7 +4,6 @@ import com.example.InkHub_backend.ai.tools.InkHubTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 /**
  * Spring AI 配置
  *
@@ -15,18 +14,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SpringAiConfig {
 
-    /** 普通 RAG 问答 ChatClient（无工具） */
+    /** 普通 RAG 问答 ChatClien */
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
-        return builder
-                .defaultSystem("你是墨墨，InkHub 知识社区的 AI 助手。"
-                        + "可以正常寒暄和自我介绍；回答站内内容相关问题时，依据检索到的资料回答并标注引用，资料没有的绝不编造。")
+        return builder.defaultSystem(
+                "你是墨墨，InkHub 知识社区的 AI 助手。"
+                     + "可以正常寒暄和自我介绍；回答站内内容相关问题时，依据检索到的资料回答并标注引用，资料没有的绝不编造。")
                 .build();
     }
 
     /**
      * Agent 专用 ChatClient（注册 Function Calling 工具）
-     * defaultTools() 直接传对象，Spring AI 自动扫描 @Tool 注解的方法
      */
     @Bean("agentChatClient")
     public ChatClient agentChatClient(ChatClient.Builder builder, InkHubTools tools) {

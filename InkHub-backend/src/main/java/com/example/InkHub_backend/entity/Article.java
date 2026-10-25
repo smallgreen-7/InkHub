@@ -6,21 +6,14 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-
 /**
  * 文章实体，对应数据库表 article（8 张表里的核心表）
- *
- * <p>内容用 contentMd 存 Markdown 原文（LONGTEXT），前端用 marked 渲染。
- * 四个计数冗余字段（view/like/favorite/comment count）直接冗余在文章表里，
- * 列表页查询不用每次都 count 子查询，互动时用 SQL 原子自增更新。
- *
- * @author InkHub
  */
 @Data
 @TableName("article")
 public class Article {
 
-    /** 主键，自增 */
+    /** 主键 */
     @TableId(type = IdType.AUTO)
     private Long id;
 

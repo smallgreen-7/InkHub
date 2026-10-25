@@ -11,15 +11,15 @@ import java.util.Map;
 @Schema(description = "数据统计总览")
 public class StatsVO {
     @Schema(description = "文章总数")
-    private Long articleCount;          // 文章总数
+    private Long articleCount;
     @Schema(description = "用户总数")
-    private Long userCount;             // 用户总数
+    private Long userCount;
     @Schema(description = "评论总数")
-    private Long commentCount;          // 评论总数
+    private Long commentCount;
     @Schema(description = "总浏览量")
-    private Long totalViews;            // 总浏览量
+    private Long totalViews;
     @Schema(description = "热门文章 Top10（title + view_count）")
-    private List<Map<String, Object>> hotArticles;        // 热门文章 Top10
+    private List<Map<String, Object>> hotArticles;
     @Schema(description = "分类分布（name + value）")
-    private List<Map<String, Object>> categoryDistribution; // 分类分布
+    private List<Map<String, Object>> categoryDistribution;
 }

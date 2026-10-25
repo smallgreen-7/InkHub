@@ -126,13 +126,18 @@
     </select>
 
     <!-- BM25 全文检索：MySQL FULLTEXT + ngram 分词器
-         MATCH ... AGAINST 返回相关性分数（BM25 算法），IN NATURAL LANGUAGE MODE 适合短查询 -->
-    <select id="selectByFulltext" resultType="com.example.InkHub_backend.entity.Article">
-        SELECT id, title, summary, content_md, view_count, like_count, favorite_count, comment_count
+         MATCH ... AGAINST 返回相关性分数（BM25 算法），IN NATURAL LANGUAGE MODE 适合短查询
+         分数同时作为列返回，用于后续 RRF 融合 / 阈值过滤 -->
+    <select id="selectByFulltext" resultType="com.example.InkHub_backend.vo.ArticleBm25VO">
+        SELECT id,
+               title,
+               summary,
+               content_md AS contentMd,
+               MATCH(title, content_md) AGAINST(#{query} IN NATURAL LANGUAGE MODE) AS score
         FROM article
         WHERE status = 1
-          AND MATCH(title, content_md) AGAINST(#{query} IN NATURAL LANGUAGE MODE)
-        ORDER BY MATCH(title, content_md) AGAINST(#{query} IN NATURAL LANGUAGE MODE) DESC
+          AND MATCH(title, content_md) AGAINST(#{query} IN NATURAL LANGUAGE MODE) > 0
+        ORDER BY score DESC
         LIMIT #{limit}
     </select>
 

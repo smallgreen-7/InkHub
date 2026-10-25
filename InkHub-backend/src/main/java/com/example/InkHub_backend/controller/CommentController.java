@@ -39,7 +39,7 @@ public class CommentController {
         throw new BusinessException(401, "未登录");
     }
 
-    // 评论列表（公开）
+    // 查对应文章的评论列表
     @Operation(summary = "评论列表", description = "公开接口；返回某文章全部评论（含二级回复，parentId 区分）")
     @GetMapping
     public R<List<CommentVO>> list(@Parameter(description = "文章 id") @RequestParam Long articleId) {

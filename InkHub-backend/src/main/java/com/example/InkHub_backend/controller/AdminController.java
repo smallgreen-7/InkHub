@@ -17,30 +17,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-// 管理端：SecurityConfig 里 /api/admin/** 已限定 hasRole("ADMIN")
-// 注意：@Tag 注解与实体类 Tag 重名（entity.* 通配符导入），这里用全限定名，Tag 类名留给实体
-@io.swagger.v3.oas.annotations.tags.Tag(name = "管理端接口", description = "文章/评论/分类/标签管理，全部需管理员角色（调试时在 Authorize 填管理员 token）")
+/** 注意：@Tag 注解与实体类 Tag 重名（entity.* 通配符导入），这里用全限定名，Tag 类名留给实体*/
+@io.swagger.v3.oas.annotations.tags.Tag(name = "管理端接口", description = "文章/评论/分类/标签管理（调试时在 Authorize 填管理员的token）")
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final ArticleMapper articleMapper;
-    private final CommentMapper commentMapper;
-    private final CategoryMapper categoryMapper;
-    private final TagMapper tagMapper;
+    private final ArticleMapper articleMapper;      //文章
+    private final CommentMapper commentMapper;      //评论
+    private final CategoryMapper categoryMapper;    //分类
+    private final TagMapper tagMapper;              //标签
     private final ArticleTagMapper articleTagMapper;
     private final com.example.InkHub_backend.service.AiIndexService aiIndexService;   // AI 索引联动
 
     // ========== 文章管理 ==========
 
-    // 全量文章列表（所有状态，可按状态过滤）
+    // 全量文章列表
     @Operation(summary = "文章列表（管理）", description = "管理员接口；可按状态过滤：0草稿/1已发布/2已下架，不传查全部")
     @GetMapping("/articles")
     public R<List<Article>> articles(@Parameter(description = "文章状态：0草稿/1已发布/2已下架，可空") @RequestParam(required = false) Integer status) {
         return R.ok(articleMapper.selectList(new LambdaQueryWrapper<Article>()
-                .eq(status != null, Article::getStatus, status)
-                .orderByDesc(Article::getCreateTime)));
+                        .eq(status != null, Article::getStatus, status)
+                        .orderByDesc(Article::getCreateTime)));
     }
 
     // 下架（发布 → 下架）

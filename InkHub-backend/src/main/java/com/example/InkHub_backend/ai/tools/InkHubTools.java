@@ -1,10 +1,12 @@
 package com.example.InkHub_backend.ai.tools;
 
+import com.example.InkHub_backend.dto.ArticleQueryDTO;
 import com.example.InkHub_backend.entity.Article;
 import com.example.InkHub_backend.entity.User;
 import com.example.InkHub_backend.mapper.ArticleMapper;
 import com.example.InkHub_backend.mapper.UserMapper;
 import com.example.InkHub_backend.vo.ArticleBriefVO;
+import com.example.InkHub_backend.vo.ArticleVO;
 import com.example.InkHub_backend.vo.ToolArticleStatsVO;
 import com.example.InkHub_backend.vo.UserBriefVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -18,14 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * InkHub Agent 工具集（Function Calling）
- *
- * 注册给 LLM 后，LLM 会根据用户问题自动判断是否调用工具：
- * - 用户问"最近有什么热门文章" → 调用 searchHotArticles
- * - 用户问"这篇文章多少人看了" → 调用 getArticleStats
- * - 用户问"有哪些作者写 Java" → 调用 searchUsers
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -46,11 +40,11 @@ public class InkHubTools {
         String sort = (sortBy == null || sortBy.isBlank()) ? "hot" : sortBy;
         String kw = (keyword == null || keyword.isBlank()) ? null : keyword;
 
-        com.example.InkHub_backend.dto.ArticleQueryDTO query = new com.example.InkHub_backend.dto.ArticleQueryDTO();
+        ArticleQueryDTO query = new ArticleQueryDTO();
         query.setKeyword(kw);
         query.setSort(sort);
 
-        List<com.example.InkHub_backend.vo.ArticleVO> articles = articleMapper.selectArticlePage(query, 0, size);
+        List<ArticleVO> articles = articleMapper.selectArticlePage(query, 0, size);
 
         List<ArticleBriefVO> result = new ArrayList<>();
         for (var a : articles) {

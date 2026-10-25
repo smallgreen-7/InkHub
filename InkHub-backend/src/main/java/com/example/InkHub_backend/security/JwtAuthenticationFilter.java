@@ -15,13 +15,16 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-// JWT 过滤器：解析 Header 里的 Token → 放入 SecurityContext
+/** JWT 过滤器：解析 Header 里的 Token → 放入 SecurityContext */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
+    /** request 就是前端发过来的数据包
+     * response 是你写给前端的回信，代表后端准备返回给前端的响应
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -33,12 +36,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Long userId = jwtUtil.getUserId(token);
                 Integer role = jwtUtil.getRole(token);
                 if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    // 关键：把角色转成 Spring Security 的权限（修复 QuickEat 的坑，这里一次写对）
-                    // role 2 = 管理员 → ROLE_ADMIN；其余普通用户 → ROLE_USER
                     String authority = (role != null && role == 2) ? "ROLE_ADMIN" : "ROLE_USER";
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            userId, null, List.of(new SimpleGrantedAuthority(authority)));
+                            userId,
+                            null,
+                            List.of(new SimpleGrantedAuthority(authority)));
+                    /** new UsernamePasswordAuthenticationToken(principal, credentials, authorities)
+                     *  第一个参数：principal 主体 → getPrincipal () 取它
+                     * 第二个参数：credentials 凭证（密码，JWT 场景填 null）
+                     * 第三个参数：权限列表
+                     */
                     SecurityContextHolder.getContext().setAuthentication(auth);
+
                 }
             } catch (Exception e) {
                 SecurityContextHolder.clearContext();

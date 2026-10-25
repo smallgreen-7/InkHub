@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
@@ -23,9 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 /**
- * Agent 对话实现（修正版 2026-09-08）
+ * Agent 对话实现
  *
  * 和普通 RAG 问答的区别：
  * - 普通 RAG：检索→拼提示词→回答（只能基于站内文章内容回答）
@@ -33,11 +33,6 @@ import java.util.UUID;
  *
  * 对话记忆：Redis List 按 (userId, sessionId) 存最近 N 轮，对话前加载、对话后追加
  * 清空会话：前端换新 sessionId 即可（旧 key 2h TTL 自动过期）
- *
- * SSE 事件：
- * {"type":"delta","text":"..."}    —— 流式文本片段
- * {"type":"done"}                  —— 完成
- * {"type":"error","msg":"..."}     —— 错误
  */
 @Slf4j
 @Service
@@ -92,7 +87,7 @@ public class AgentChatServiceImpl implements AgentChatService {
 
             StringBuilder fullResponse = new StringBuilder();
 
-            flux.doOnNext(delta -> {
+            Disposable disposable = flux.doOnNext(delta -> {
                         sendQuietly(emitter, Map.of("type", "delta", "text", delta));
                         fullResponse.append(delta);
                     })
@@ -108,6 +103,10 @@ public class AgentChatServiceImpl implements AgentChatService {
                         emitter.complete();
                     })
                     .subscribe();
+            // 用户断开 / 超时 / 错误时，取消上游订阅，避免模型继续生成浪费 token
+            emitter.onCompletion(disposable::dispose);
+            emitter.onTimeout(disposable::dispose);
+            emitter.onError(e -> disposable.dispose());
         } catch (BusinessException e) {
             sendQuietly(emitter, Map.of("type", "error", "msg", e.getMessage()));
             emitter.complete();

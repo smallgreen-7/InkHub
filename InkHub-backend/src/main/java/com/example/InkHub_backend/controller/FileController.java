@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequestMapping("/api/upload")
 public class FileController {
 
-    // 上传目录（来自 yaml 的 upload.dir）
+    // 上传目录
     @Value("${upload.dir}")
     private String uploadDir;
 
@@ -39,10 +39,13 @@ public class FileController {
         if (!ALLOWED.contains(ext)) {
             throw new BusinessException(400, "仅支持 jpg/png/gif/webp 图片");
         }
-        // UUID 重命名：防重名、防路径穿越
+        /*
+         * UUID（Universally Unique Identifier）全局唯一标识符   重命名：防重名、防路径穿越
+         * new File:仅在内存里创建一个 Java 对象，记录路径。
+         * getAbsoluteFile():用来拿绝对路劲
+         */
         String filename = UUID.randomUUID().toString().replace("-", "") + "." + ext;
         try {
-            // 转绝对路径再存：相对路径会被 Tomcat 拼到临时目录导致保存失败
             File dir = new File(uploadDir).getAbsoluteFile();
             if (!dir.exists() && !dir.mkdirs()) {
                 throw new BusinessException(500, "上传目录创建失败");
@@ -51,7 +54,6 @@ public class FileController {
         } catch (IOException e) {
             throw new BusinessException(500, "文件保存失败");
         }
-        // 返回给前端的 URL（走静态资源映射，见 1.3）
         return R.ok("/uploads/" + filename);
     }
 
