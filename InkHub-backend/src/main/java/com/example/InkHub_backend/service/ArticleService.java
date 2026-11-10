@@ -13,6 +13,7 @@ public interface ArticleService {
     Page<ArticleVO> page(ArticleQueryDTO q);          // 文章流
 
     ArticleDetailVO detail(Long id);                  // 详情（浏览量+1）
+    ArticleDetailVO detailForEdit(Long userId, Long id);  // 编辑回填（作者本人，含草稿，不增加浏览量）
 
     Long create(Long userId, ArticleDTO dto);         // 发布/存草稿
 

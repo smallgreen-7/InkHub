@@ -48,6 +48,13 @@ public class ArticleController {
         return R.ok(articleService.detail(id));
     }
 
+    // 编辑回填（登录，作者本人；草稿也可读取）
+    @Operation(summary = "编辑回填", description = "需登录，仅作者本人可操作；返回任意状态（含草稿）的文章内容，不增加浏览量")
+    @GetMapping("/{id}/edit")
+    public R<ArticleDetailVO> detailForEdit(@Parameter(description = "文章 id") @PathVariable Long id) {
+        return R.ok(articleService.detailForEdit(currentUserId(), id));
+    }
+
     // 发布 / 存草稿（登录）
     @Operation(summary = "发布文章/存草稿", description = "需登录；status=1 直接发布，status=0 存草稿；返回文章 id")
     @PostMapping

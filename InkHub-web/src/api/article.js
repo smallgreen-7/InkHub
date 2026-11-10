@@ -10,6 +10,11 @@ export function getArticle(id) {
   return request.get(`/articles/${id}`)
 }
 
+// 编辑回填（作者本人，草稿也能取到）
+export function getArticleForEdit(id) {
+  return request.get(`/articles/${id}/edit`)
+}
+
 // 我的文章（含草稿）
 export function getMyArticles(pageNum = 1, pageSize = 10) {
   return request.get('/articles/mine', { params: { pageNum, pageSize } })

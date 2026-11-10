@@ -1,12 +1,15 @@
 <template>
   <div class="editor-page page-container">
     <div class="editor-head">
-      <h2 class="page-title">{{ isEdit ? '编辑文章' : '写文章' }}</h2>
+      <div class="head-left">
+        <el-button link class="back-link" @click="goBack">← 返回</el-button>
+        <h2 class="page-title">{{ isEdit ? '编辑文章' : '写文章' }}</h2>
+      </div>
       <div class="head-actions">
-        <el-button size="large" @click="save(0)">存草稿</el-button>
-        <el-button type="primary" size="large" class="ink-gradient-btn" @click="save(1)"
-          >发布</el-button
-        >
+        <el-button size="large" @click="save(0)">{{ isPublished ? '保存修改' : '存草稿' }}</el-button>
+        <el-button type="primary" size="large" class="ink-gradient-btn" @click="save(1)">
+          {{ isPublished ? '保存并查看' : '发布' }}
+        </el-button>
       </div>
     </div>
 
@@ -81,12 +84,12 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
-import { createArticle, updateArticle, getArticle } from '@/api/article'
+import { createArticle, updateArticle, getArticleForEdit } from '@/api/article'
 import { getCategories } from '@/api/category'
 import { getTags } from '@/api/category'
 import { uploadFile } from '@/api/upload'
@@ -94,7 +97,9 @@ import { summarize as aiSummarizeApi } from '@/api/ai'
 
 const route = useRoute()
 const router = useRouter()
-const isEdit = !!route.params.id
+const articleId = ref(route.params.id ? Number(route.params.id) : null)
+const isEdit = computed(() => !!articleId.value)
+const isPublished = ref(false) // 当前文章是否已发布（已发布时“存草稿”无效，按钮文案改为保存修改）
 const form = ref({ title: '', summary: '', categoryId: null, tagIds: [], contentMd: '' })
 const summarizing = ref(false)   // AI 生成摘要中
 const categories = ref([])
@@ -124,16 +129,34 @@ const toolbars = [
 async function save(status) {
   if (!form.value.title.trim()) return ElMessage.warning('标题不能为空')
   if (!form.value.contentMd.trim()) return ElMessage.warning('内容不能为空')
-  const payload = { ...form.value, status }
-  if (isEdit) {
-    await updateArticle(route.params.id, payload)
-    ElMessage.success('保存成功')
-    router.push('/profile')
+  // 已发布的文章不允许“转回草稿”（后端状态机也不支持），统一按发布态提交
+  const payload = { ...form.value, status: isPublished.value ? 1 : status }
+  if (isEdit.value) {
+    await updateArticle(articleId.value, payload)
+    if (payload.status === 1) {
+      ElMessage.success('已保存')
+      router.push('/article/' + articleId.value)
+    } else {
+      ElMessage.success('已存草稿')
+    }
   } else {
     const id = await createArticle(payload)
-    ElMessage.success(status === 1 ? '发布成功' : '已存草稿')
-    router.push('/article/' + id)
+    if (status === 1) {
+      ElMessage.success('发布成功')
+      router.push('/article/' + id)
+    } else {
+      // 草稿未发布，详情接口不可访问 → 留在编辑器，避免用户以为文章被删除了
+      articleId.value = id
+      isPublished.value = false
+      router.replace('/editor/' + id)
+      ElMessage.success('已存草稿，可在「我的」中继续编辑')
+    }
   }
+}
+
+function goBack() {
+  if (window.history.length > 1) router.back()
+  else router.push('/')
 }
 
 // AI 生成摘要：正文交给大模型，生成 ≤80 字摘要填入表单
@@ -166,16 +189,18 @@ async function onUploadImg(files, callback) {
 onMounted(async () => {
   categories.value = await getCategories()
   tags.value = await getTags()
-  if (isEdit) {
-    // 编辑时回填（后端 ArticleDetailVO 有 contentMd/tagIds）
-    const detail = await getArticle(route.params.id)
+  if (isEdit.value) {
+    // 编辑回填：走作者专用接口，草稿也能正常加载
+    const detail = await getArticleForEdit(articleId.value)
     form.value = {
       title: detail.title,
       summary: detail.summary,
       categoryId: detail.categoryId,
       tagIds: detail.tagIds || [],
       contentMd: detail.contentMd,
+      cover: detail.cover || '',
     }
+    isPublished.value = detail.status === 1
   }
 })
 </script>
@@ -189,8 +214,24 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  gap: 16px;
+  margin-bottom: 14px;
+  position: sticky;
+  top: 60px;
+  z-index: 20;
+  padding: 12px 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--ink-border-light);
 }
+.head-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.back-link {
+  color: var(--ink-muted) !important;
+  font-size: 14px;
+  padding: 4px 2px !important;
+}
+.back-link:hover { color: var(--ink-primary) !important; }
 .page-title {
   margin: 0;
   font-size: 22px;

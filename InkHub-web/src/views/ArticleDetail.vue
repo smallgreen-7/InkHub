@@ -1,5 +1,37 @@
 <template>
   <div class="detail-page page-container" v-if="article">
+    <!-- 阅读进度条（固定在导航下方） -->
+    <div class="read-progress"><i :style="{ width: progress + '%' }" /></div>
+
+    <!-- 顶部工具条：返回 / 当前文章 / 作者编辑入口 -->
+    <div class="detail-topbar">
+      <button class="back-btn" @click="goBack">
+        <svg
+          viewBox="0 0 24 24"
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        返回
+      </button>
+      <span class="topbar-title">{{ article.title }}</span>
+      <el-button
+        v-if="isAuthor"
+        class="topbar-edit"
+        link
+        type="primary"
+        @click="$router.push('/editor/' + article.id)"
+        >编辑</el-button
+      >
+    </div>
+
     <div class="detail-card ink-card">
       <!-- 文章头 -->
       <div class="article-head">
@@ -217,8 +249,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   getArticle,
@@ -235,8 +267,10 @@ import { renderMarkdown } from '@/utils/markdown'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const article = ref(null)
+const progress = ref(0)
 const related = ref([])
 const html = computed(() => renderMarkdown(article.value?.contentMd || ''))
 const liked = ref(false)
@@ -245,6 +279,21 @@ const comments = ref([])
 const commentText = ref('')
 const replyParentId = ref(null)
 const replyTargetName = ref('')
+const isAuthor = computed(
+  () => userStore.isLogin && article.value?.authorId === userStore.userInfo?.id
+)
+
+// 返回：优先浏览器历史，直接打开详情页时回到首页
+function goBack() {
+  if (window.history.length > 1) router.back()
+  else router.push('/')
+}
+
+// 阅读进度
+function onScroll() {
+  const total = document.documentElement.scrollHeight - window.innerHeight
+  progress.value = total > 0 ? Math.min(100, Math.max(0, (window.scrollY / total) * 100)) : 0
+}
 
 function formatTime(t) {
   return t ? t.replace('T', ' ').slice(0, 16) : ''
@@ -320,7 +369,12 @@ async function delComment(id) {
   article.value.commentCount--
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <style scoped>
@@ -331,6 +385,75 @@ onMounted(load)
 .detail-card {
   padding: 44px 48px 36px;
 }
+
+/* 阅读页宽度：正文控制在≈75字符，更接近主流博客阅读宽度 */
+.detail-page {
+  max-width: 880px;
+}
+
+/* 阅读进度条 */
+.read-progress {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(10, 30, 50, 0.06);
+  z-index: 95;
+  pointer-events: none;
+}
+.read-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--ink-primary), var(--ink-accent));
+  transition: width 0.1s linear;
+}
+
+/* 顶部工具条：滚动时吸顶，随时可以返回 */
+.detail-topbar {
+  position: sticky;
+  top: 60px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 10px 2px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--ink-border-light);
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--ink-border);
+  background: #fff;
+  color: var(--ink-muted);
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+.back-btn:hover {
+  border-color: var(--ink-primary-300);
+  color: var(--ink-primary);
+  transform: translateX(-2px);
+}
+.topbar-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.topbar-edit { flex-shrink: 0; }
 
 /* 文章头 */
 .article-head {

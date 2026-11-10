@@ -78,6 +78,18 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    public ArticleDetailVO detailForEdit(Long userId, Long id) {
+        ArticleDetailVO vo = articleMapper.selectDetail(id);
+        // 只能编辑自己的文章；此处不校验 status，草稿也要能回填
+        if (vo == null || !userId.equals(vo.getAuthorId())) {
+            throw new BusinessException(403, "只能编辑自己的文章");
+        }
+        fillTags(vo);
+        vo.setTagIds(articleTagMapper.selectTagIdsByArticle(id));
+        return vo;
+    }
+
+    @Override
     @Transactional   // 文章 + 标签中间表要一起成功/失败
     public Long create(Long userId, ArticleDTO dto) {
         Article article = new Article();

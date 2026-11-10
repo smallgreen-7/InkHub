@@ -15,10 +15,10 @@
                  @keyup.enter="load(1)" />
           <el-button class="search-btn ink-gradient-btn" @click="load(1)">搜索</el-button>
         </div>
-        <div class="hero-sort">
-          <button class="sort-chip" :class="{ active: sort === 'latest' }" @click="changeSort('latest')">最新</button>
-          <button class="sort-chip" :class="{ active: sort === 'hot' }" @click="changeSort('hot')">最热</button>
-          <el-button class="hero-write ink-gradient-btn" round @click="goWrite">开始写作</el-button>
+        <div class="hero-actions">
+          <el-button class="hero-write ink-gradient-btn" round size="large" @click="goWrite"
+            >开始写作</el-button
+          >
         </div>
       </div>
     </div>
@@ -43,6 +43,26 @@
 
       <!-- 文章卡片网格 -->
       <div class="list">
+        <!-- 列表工具条：当前分类 + 总数 + 排序（从 Hero 下移，符合常见社区布局） -->
+        <div class="list-head">
+          <div class="list-title">
+            <span class="list-name">{{ currentCategoryName }}</span>
+            <span class="list-count">共 {{ total }} 篇</span>
+          </div>
+          <div class="sort-tabs">
+            <button
+              class="sort-tab"
+              :class="{ active: sort === 'latest' }"
+              @click="changeSort('latest')"
+            >
+              最新
+            </button>
+            <button class="sort-tab" :class="{ active: sort === 'hot' }" @click="changeSort('hot')">
+              最热
+            </button>
+          </div>
+        </div>
+
         <div v-if="articles.length" class="feed">
           <article v-for="a in articles" :key="a.id" class="article-card ink-card ink-card--hover" @click="goDetail(a.id)">
             <!-- 封面：有图显示图，无图渐变色块 -->
@@ -93,7 +113,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getArticles, semanticSearch } from '@/api/article'
 import { getCategories } from '@/api/category'
@@ -136,7 +156,14 @@ function selectCat(id) {
   categoryId.value = id
   load(1)
 }
+const currentCategoryName = computed(() => {
+  if (!categoryId.value) return '全部文章'
+  return categories.value.find((c) => c.id === categoryId.value)?.name || '全部文章'
+})
+
 function goDetail(id) {
+  // 记住列表滚动位置，从详情页返回时恢复（避免回到顶部）
+  sessionStorage.setItem('inkhub:home:scroll', String(window.scrollY))
   router.push('/article/' + id)
 }
 function goWrite() {
@@ -145,8 +172,13 @@ function goWrite() {
   else router.push({ path: '/login', query: { redirect: '/editor' } })
 }
 onMounted(async () => {
-  load(1)
+  await load(1)
   categories.value = await getCategories()
+  const y = sessionStorage.getItem('inkhub:home:scroll')
+  if (y) {
+    sessionStorage.removeItem('inkhub:home:scroll')
+    nextTick(() => window.scrollTo({ top: Number(y) }))
+  }
 })
 </script>
 
@@ -233,19 +265,52 @@ onMounted(async () => {
 .search-input::placeholder { color: rgba(255, 255, 255, 0.55); }
 .search-btn { flex-shrink: 0; border-radius: 999px !important; padding: 9px 24px !important; }
 
-.hero-sort { margin-top: 24px; display: flex; gap: 10px; justify-content: center; }
-.sort-chip {
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.85);
-  border-radius: 999px;
-  padding: 7px 20px;
-  font-size: 13.5px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.hero-actions { margin-top: 26px; display: flex; justify-content: center; }
+
+/* 列表工具条 */
+.list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 0 2px;
 }
-.sort-chip:hover { background: rgba(255, 255, 255, 0.14); }
+.list-title { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.list-name {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink-ink);
+  letter-spacing: -0.3px;
+}
+.list-count { font-size: 13px; color: var(--ink-faint); }
+.sort-tabs {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: var(--ink-bg);
+  border: 1px solid var(--ink-border-light);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.sort-tab {
+  border: none;
+  background: transparent;
+  color: var(--ink-muted);
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.sort-tab:hover { color: var(--ink-primary); }
+.sort-tab.active {
+  background: #fff;
+  color: var(--ink-primary);
+  font-weight: 600;
+  box-shadow: var(--ink-shadow-sm);
+}
 .sort-chip.active {
   background: var(--ink-accent-glow);
   color: var(--ink-abyss);
@@ -422,7 +487,29 @@ onMounted(async () => {
   padding: 2px 10px;
 }
 
-.pager { display: flex; justify-content: center; margin-top: 32px; }
+/* 悬浮分页：滚动时固定在视口底部，随时可翻页 */
+.pager {
+  position: sticky;
+  bottom: 20px;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  margin: 30px 0 4px;
+}
+.pager :deep(.el-pagination) {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--ink-border-light);
+  border-radius: 999px;
+  padding: 7px 14px;
+  box-shadow: 0 12px 30px rgba(10, 30, 50, 0.14);
+}
+
+@media (max-width: 860px) {
+  .list-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .pager { bottom: 12px; }
+}
 
 @media (max-width: 1024px) {
   .hero-title { font-size: 38px; }
