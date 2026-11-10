@@ -133,7 +133,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
@@ -146,14 +146,61 @@ const samples = ['这个站有哪些文章？', '站内文章讲了什么内容�
 const agentSamples = ['最近有什么热门文章？', '这个站有多少作者？', '浏览量最高的文章是哪篇？']
 
 const panelOpen = ref(false)
-const messages = ref([])
 const draft = ref('')
 const streaming = ref(false)
 const controller = ref(null)
 const bodyRef = ref(null)
 
-const mode = ref('rag') // 'rag' | 'agent'
-const sessionId = ref(newSessionId()) // 会话 id，清空时更换
+const mode = ref('rag') // 'rag' | 'agent'：📖 文章问答 / 🔧 数据助手
+// 两种模式各自一套消息与会话 id，互不干扰；切换只换展示，不清数据
+const messagesByMode = reactive({ rag: [], agent: [] })
+const sessionByMode = reactive({ rag: newSessionId(), agent: newSessionId() })
+// 当前模式对应的消息列表（模板与下方逻辑都读它）
+const messages = computed(() => messagesByMode[mode.value])
+// 正在流式输出的目标列表：发送时快照，防止流式中途切模式写错数组
+const activeList = ref(null)
+
+const STORAGE_KEY = 'inkhub:ai:chat:v1'
+const STORAGE_MAX = 50 // 只保留最近 50 条，避免 sessionStorage 配额爆掉
+
+// —— sessionStorage 持久化：刷新不丢，关标签页自动清空 ——
+function snapshot(list) {
+  return list.slice(-STORAGE_MAX).map((m) => ({ ...m, streaming: false }))
+}
+
+function persist() {
+  try {
+    sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        mode: mode.value,
+        rag: { messages: snapshot(messagesByMode.rag), sessionId: sessionByMode.rag },
+        agent: { messages: snapshot(messagesByMode.agent), sessionId: sessionByMode.agent },
+      }),
+    )
+  } catch {
+    // 配额满 / 隐私模式禁用存储时忽略，不影响正常对话
+  }
+}
+
+function restore() {
+  try {
+    const data = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null')
+    if (!data) return
+    ;['rag', 'agent'].forEach((k) => {
+      const saved = data[k]
+      if (!saved) return
+      if (Array.isArray(saved.messages) && !messagesByMode[k].length) {
+        messagesByMode[k] = saved.messages.map((m) => ({ ...m, streaming: false }))
+      }
+      if (saved.sessionId) sessionByMode[k] = saved.sessionId
+    })
+    if (data.mode === 'rag' || data.mode === 'agent') mode.value = data.mode
+  } catch {
+    sessionStorage.removeItem(STORAGE_KEY)
+  }
+}
+restore()
 
 // 页面上下文：文章详情页时带上"当前文章"
 const ctx = computed(() => {
@@ -178,6 +225,7 @@ function togglePanel() {
     return
   }
   panelOpen.value = !panelOpen.value
+  if (panelOpen.value) scrollBottom()
 }
 
 function ask(q) {
@@ -196,11 +244,17 @@ function send() {
   const q = draft.value.trim()
   if (!q || streaming.value) return
   draft.value = ''
-  messages.value.push({ id: uid(), role: 'user', content: q })
+  // 发送瞬间锁定目标列表与模式：流式过程中切模式也不会把增量写进另一个模式的数组
+  const list = messagesByMode[mode.value]
+  const sid = sessionByMode[mode.value]
+  const sendMode = mode.value
+  activeList.value = list
+
+  list.push({ id: uid(), role: 'user', content: q })
 
   // 👇 先记录这条 AI 消息在数组中的位置
-  const aiIndex = messages.value.length
-  messages.value.push({
+  const aiIndex = list.length
+  list.push({
     id: uid(),
     role: 'ai',
     content: '',
@@ -211,68 +265,61 @@ function send() {
   streaming.value = true
 
   // 最近 6 轮作为多轮上下文
-  const history = messages.value
+  const history = list
     .slice(0, -2)
     .filter((m) => m.content && !m.error)
     .slice(-6)
     .map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
 
   controller.value = chatStream({
-    mode: mode.value,
+    mode: sendMode,
     question: q,
-    sessionId: sessionId.value,
+    sessionId: sid,
     contextType: ctx.value.article ? 'article' : 'normal',
     articleId: ctx.value.article ? Number(ctx.value.article) : null,
     history,
     onDelta: (t) => {
-      // 👇 改这里：用索引找到消息，修改后重新赋值整个数组
-      const msg = messages.value[aiIndex]
-      if (msg) {
-        msg.content += t
-        messages.value = [...messages.value]
-      }
+      const msg = list[aiIndex]
+      if (msg) msg.content += t
     },
     onSources: (s) => {
-      // 👇 改这里
-      const msg = messages.value[aiIndex]
-      if (msg) {
-        msg.sources = s
-        messages.value = [...messages.value]
-      }
+      const msg = list[aiIndex]
+      if (msg) msg.sources = s
     },
     onDone: () => {
-      // 👇 改这里
-      const msg = messages.value[aiIndex]
-      if (msg) {
-        msg.streaming = false
-        messages.value = [...messages.value]
-      }
+      const msg = list[aiIndex]
+      if (msg) msg.streaming = false
       streaming.value = false
+      persist()
     },
     onError: (errMsg) => {
-      const msg = messages.value[aiIndex]
+      const msg = list[aiIndex]
       if (msg) {
         msg.streaming = false
         msg.error = errMsg
         if (!msg.content) msg.content = '（这次没有生成回答）'
-        messages.value = [...messages.value]
       }
       streaming.value = false
+      persist()
     },
   })
 }
 
 function stop() {
   controller.value?.abort()
-  const last = messages.value[messages.value.length - 1]
+  const list = activeList.value || messages.value
+  const last = list[list.length - 1]
   if (last && last.role === 'ai') last.streaming = false
   streaming.value = false
+  persist() // 中断时的半截回答也存下来
 }
 
 function clearChat() {
   if (streaming.value) stop()
-  messages.value = []
-  sessionId.value = newSessionId() // 清空 = 开新会话（后端旧 key 2h 自动过期）
+  const m = mode.value
+  messagesByMode[m] = [] // 只清当前模式
+  sessionByMode[m] = newSessionId() // 清空 = 开新会话（后端旧 key 2h 自动过期）
+  persist()
 }
 
 function newSessionId() {
@@ -286,9 +333,9 @@ function newSessionId() {
 function switchMode(m) {
   if (mode.value === m) return
   if (streaming.value) stop()
-  mode.value = m
-  messages.value = [] // 切模式清空消息（两种模式上下文不混）
-  sessionId.value = newSessionId() // 换新会话
+  mode.value = m // 只切展示：两套消息各自保留，上下文也不会混
+  persist()
+  scrollBottom()
 }
 </script>
 

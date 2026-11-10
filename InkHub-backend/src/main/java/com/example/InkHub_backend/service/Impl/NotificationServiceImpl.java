@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.InkHub_backend.common.BusinessException;
 import com.example.InkHub_backend.entity.Notification;
+import com.example.InkHub_backend.entity.User;
 import com.example.InkHub_backend.mapper.NotificationMapper;
+import com.example.InkHub_backend.mapper.UserMapper;
 import com.example.InkHub_backend.service.NotificationService;
 import com.example.InkHub_backend.vo.NotificationVO;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationMapper notificationMapper;
+    private final UserMapper userMapper;
 
     @Override           //我的通知
     public Page<NotificationVO> page(Long userId, int pageNum, int pageSize) {
@@ -52,5 +55,23 @@ public class NotificationServiceImpl implements NotificationService {
                 .eq(Notification::getUserId, userId)
                 .eq(Notification::getIsRead, 0)
                 .set(Notification::getIsRead, 1));
+    }
+
+    @Override           //接收者是否愿意收这类通知（未设置时默认开）
+    public boolean isNotifyEnabled(Long userId, int type) {
+        if (userId == null) {
+            return false;
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return false;
+        }
+        Integer value = switch (type) {
+            case 1 -> user.getNotifyComment();
+            case 2 -> user.getNotifyLike();
+            case 3 -> user.getNotifyFavorite();
+            default -> 1;
+        };
+        return value == null || value == 1;
     }
 }

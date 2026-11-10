@@ -21,4 +21,14 @@ public class RedisKeys {
     public static String agentHistory(Long userId, String sessionId) {
         return "ai:agent:history:" + userId + ":" + sessionId;
     }
+
+    // 找回密码验证码：key: user:reset:code:{email}，5 分钟过期
+    public static String resetCode(String email) {
+        return "user:reset:code:" + email;
+    }
+
+    // 找回密码发送限流：key: user:reset:limit:{email}，60 秒内只能发一次
+    public static String resetLimit(String email) {
+        return "user:reset:limit:" + email;
+    }
 }

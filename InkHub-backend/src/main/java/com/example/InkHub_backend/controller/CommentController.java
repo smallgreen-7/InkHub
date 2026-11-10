@@ -9,6 +9,7 @@ import com.example.InkHub_backend.entity.Notification;
 import com.example.InkHub_backend.mapper.ArticleMapper;
 import com.example.InkHub_backend.mapper.CommentMapper;
 import com.example.InkHub_backend.mapper.NotificationMapper;
+import com.example.InkHub_backend.service.NotificationService;
 import com.example.InkHub_backend.vo.CommentVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +31,7 @@ public class CommentController {
     private final CommentMapper commentMapper;
     private final ArticleMapper articleMapper;
     private final NotificationMapper notificationMapper;
+    private final NotificationService notificationService;
 
     private Long currentUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -73,7 +75,8 @@ public class CommentController {
         if (parentId != null) {
             Comment parent = commentMapper.selectById(parentId);
             Long myId = currentUserId();
-            if (parent != null && !parent.getUserId().equals(myId)) {
+            if (parent != null && !parent.getUserId().equals(myId)
+                    && notificationService.isNotifyEnabled(parent.getUserId(), 1)) {
                 Long receiverId = parent.getUserId();
                 Notification n = new Notification();
                 n.setUserId(receiverId);

@@ -17,6 +17,14 @@ public class LoginVO {
     private String nickname;
     @Schema(description = "头像 URL")
     private String avatar;
+    @Schema(description = "邮箱")
+    private String email;
     @Schema(description = "角色：1 普通用户 / 2 管理员")
     private Integer role;
+    @Schema(description = "评论/回复通知开关：1 开 0 关")
+    private Integer notifyComment;
+    @Schema(description = "点赞通知开关：1 开 0 关")
+    private Integer notifyLike;
+    @Schema(description = "收藏通知开关：1 开 0 关")
+    private Integer notifyFavorite;
 }

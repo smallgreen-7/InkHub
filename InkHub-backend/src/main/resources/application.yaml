@@ -53,6 +53,23 @@ spring:
       date-format: yyyy-MM-dd HH:mm:ss
       time-zone: GMT+8
 
+  mail:
+    # 邮件服务（目前仅用于「忘记密码」验证码）；账号密码一律走环境变量
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          connectiontimeout: 8000
+          timeout: 8000
+          writetimeout: 8000
+
 jwt:
   secret: ${JWT_SECRET}
   expire: 7200000
@@ -78,6 +95,11 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
   packages-to-scan: com.example.InkHub_backend.controller
+
+inkhub:
+  mail:
+    # 未配置 SMTP 账号时：true = 验证码打到后端日志（仅本地调试用），false = 直接报错
+    dev-log-code: ${MAIL_DEV_LOG_CODE:true}
 
 upload:
   dir: ./uploads

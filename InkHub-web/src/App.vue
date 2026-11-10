@@ -116,6 +116,8 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+                  <el-dropdown-item command="settings">账号设置</el-dropdown-item>
+                  <el-dropdown-item command="theme">{{ isDark ? '☀️ 浅色模式' : '🌙 深色模式' }}</el-dropdown-item>
                   <el-dropdown-item v-if="userStore.isAdmin" command="admin"
                     >管理后台</el-dropdown-item
                   >
@@ -157,6 +159,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AiFloating from '@/components/AiFloating.vue'
+import { getTheme, toggleTheme } from '@/utils/theme'
 import {
   getNotifications,
   getUnreadCount,
@@ -168,6 +171,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const unreadCount = ref(0)
 const notices = ref([])
+const isDark = ref(getTheme() === 'dark')
 
 const initial = computed(() => {
   const name = userStore.userInfo?.nickname || userStore.userInfo?.username || 'U'
@@ -186,6 +190,12 @@ function onCommand(cmd) {
   if (cmd === 'logout') {
     userStore.logout()
     router.push('/')
+  } else if (cmd === 'theme') {
+    isDark.value = toggleTheme() === 'dark'
+  } else if (cmd === 'profile') {
+    router.push('/profile')
+  } else if (cmd === 'settings') {
+    router.push('/settings')
   } else {
     router.push('/' + cmd)
   }

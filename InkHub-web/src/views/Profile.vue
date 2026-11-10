@@ -23,6 +23,9 @@
         <el-button type="primary" class="ink-gradient-btn side-edit" @click="openEdit">
           编辑资料
         </el-button>
+        <el-button link type="primary" class="side-more" @click="$router.push('/settings')">
+          更多设置（密码 / 邮箱 / 通知）→
+        </el-button>
       </aside>
 
       <!-- 右侧：内容区 -->
@@ -142,7 +145,7 @@ async function chooseAvatar(option) {
     const url = await uploadFile(option.file)
     editDialog.avatar = url
     ElMessage.success('头像已选择，点保存生效')
-  } catch (e) {
+  } catch {
     ElMessage.error('头像上传失败')
   }
 }
@@ -236,6 +239,10 @@ onMounted(load)
 }
 .side-edit {
   width: 100%;
+}
+.side-more {
+  margin-top: 6px;
+  font-size: 12.5px;
 }
 
 /* 右侧内容区 */

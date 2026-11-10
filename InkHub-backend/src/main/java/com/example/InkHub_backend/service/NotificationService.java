@@ -16,4 +16,12 @@ public interface NotificationService {
 
     /** 全部已读 */
     void readAll(Long userId);
+
+    /**
+     * 接收者是否开启该类通知（创建通知前检查，尊重用户的通知偏好）
+     *
+     * @param userId 接收者 id
+     * @param type   1 评论回复 / 2 点赞 / 3 收藏
+     */
+    boolean isNotifyEnabled(Long userId, int type);
 }

@@ -6,6 +6,7 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: () => import('@/views/Home.vue') },
     { path: '/login', name: 'login', component: () => import('@/views/Login.vue') },
+    { path: '/forgot', name: 'forgot', component: () => import('@/views/Forgot.vue') },
     {
       path: '/article/:id',
       name: 'article-detail',
@@ -28,6 +29,12 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('@/views/Profile.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('@/views/Settings.vue'),
       meta: { requiresAuth: true },
     },
     // 管理端：需要管理员

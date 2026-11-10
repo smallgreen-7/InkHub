@@ -36,8 +36,17 @@ public class User {
     /** 角色：1为普通用户 2为管理员 */
     private Integer role;
 
-    /** 状态：0 正常 1 禁用 */
+    /** 状态：0 正常 1 禁用（注销 = 软删除，置 1） */
     private Integer status;
+
+    /** 通知偏好：评论/回复 1 开 0 关 */
+    private Integer notifyComment;
+
+    /** 通知偏好：点赞 1 开 0 关 */
+    private Integer notifyLike;
+
+    /** 通知偏好：收藏 1 开 0 关 */
+    private Integer notifyFavorite;
 
     /** 创建时间 */
     private LocalDateTime createdAt;

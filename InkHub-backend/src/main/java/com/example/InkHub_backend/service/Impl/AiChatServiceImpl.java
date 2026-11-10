@@ -33,6 +33,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * RAG 问答编排
@@ -108,21 +110,33 @@ public class AiChatServiceImpl implements AiChatService {
                     .user(userPrompt)
                     .stream()
                     .content();
+            // 客户端断开不会触发 SseEmitter 回调（只有服务端完成/超时/异常才有），
+            // 浏览器关页面只能靠写入失败发现，所以要在 onNext 里自己检测并取消上游。
+            AtomicBoolean clientGone = new AtomicBoolean(false);
+            AtomicReference<Disposable> upstream = new AtomicReference<>();
+
             Disposable disposable = flux.doOnNext(delta ->
-                        sendQuietly(emitter, Map.of("type", "delta", "text", delta))
+                        sendDeltaOrCancel(emitter, Map.of("type", "delta", "text", delta), upstream, clientGone, userId)
                     )
                     .doOnComplete(() -> {
+                        if (clientGone.get()) return;
                         sendQuietly(emitter, Map.of("type", "sources", "sources", toSources(hits)));
                         sendQuietly(emitter, Map.of("type", "done"));
                         emitter.complete();
                     })
                     .doOnError(e -> {
+                        if (clientGone.get()) return;
                         log.error("AI 流式问答异常 userId={}", userId, e);
                         sendQuietly(emitter, Map.of("type", "error", "msg", "AI 服务开小差了，请稍后再试"));
                         emitter.complete();
                     })
                     .subscribe();   // 异步订阅，不阻塞
-            // 用户断开 / 超时 / 错误时，取消上游订阅，避免模型继续生成浪费 token
+            upstream.set(disposable);
+            // 首个 delta 可能在 set 之前就写失败，这里补一次取消
+            if (clientGone.get()) {
+                disposable.dispose();
+            }
+            // 超时 / 服务端异常时取消上游订阅，避免模型继续生成浪费 token
             emitter.onCompletion(disposable::dispose);
             emitter.onTimeout(disposable::dispose);
             emitter.onError(e -> disposable.dispose());
@@ -249,6 +263,25 @@ public class AiChatServiceImpl implements AiChatService {
         try {
             send(emitter, payload);
         } catch (IOException ignored) {
+        }
+    }
+
+    /**
+     * 转发流式 delta：客户端断开时 SseEmitter 写入会抛 IOException / IllegalStateException。
+     * 这里必须取消上游订阅，否则模型仍在继续生成、白烧 token（原实现把异常吞掉，订阅不会停）。
+     */
+    private void sendDeltaOrCancel(SseEmitter emitter, Map<String, Object> payload,
+                                   AtomicReference<Disposable> upstream,
+                                   AtomicBoolean clientGone, Long userId) {
+        try {
+            send(emitter, payload);
+        } catch (IOException | IllegalStateException e) {
+            clientGone.set(true);
+            log.info("SSE 客户端已断开，取消上游订阅 userId={}", userId);
+            Disposable d = upstream.get();
+            if (d != null) {
+                d.dispose();
+            }
         }
     }
 

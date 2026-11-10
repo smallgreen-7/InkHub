@@ -87,6 +87,35 @@
   --el-box-shadow-light: var(--ink-shadow-sm);
 }
 
+/* ---------- 深色主题：只换变量，组件几乎不用改 ---------- */
+:root[data-theme='dark'] {
+  --ink-ink: #e8f1f7;
+  --ink-text: #c2d3e0;
+  --ink-muted: #92a8b9;
+  --ink-faint: #7b90a1;
+  --ink-border: #22384b;
+  --ink-border-light: #1a2c3d;
+  --ink-bg: #0a141f;
+  --ink-card: #101f2d;
+  --ink-accent-soft: #14313d;
+  --ink-primary-50: #0d2230;
+  --ink-primary-100: #103040;
+  --ink-primary-200: #164054;
+
+  /* Element Plus 部分基础变量也跟一下，避免卡片/表格死白 */
+  --el-text-color-primary: #e8f1f7;
+  --el-text-color-regular: #c2d3e0;
+  --el-text-color-secondary: #92a8b9;
+  --el-border-color: #22384b;
+  --el-border-color-light: #1a2c3d;
+  --el-fill-color-light: #14273a;
+  --el-fill-color-blank: #101f2d;
+  --el-bg-color: #101f2d;
+  --el-bg-color-overlay: #101f2d;
+  --el-box-shadow: var(--ink-shadow);
+  --el-box-shadow-light: var(--ink-shadow-sm);
+}
+
 /* ---------- 全局基础 ---------- */
 * {
   box-sizing: border-box;

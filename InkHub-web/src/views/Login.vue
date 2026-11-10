@@ -36,6 +36,9 @@
               </el-input>
             </el-form-item>
             <el-button type="primary" class="submit ink-gradient-btn" size="large" :loading="loading" @click="doLogin">登 录</el-button>
+            <div class="forgot-row">
+              <el-button link type="primary" size="small" @click="$router.push('/forgot')">忘记密码？</el-button>
+            </div>
           </el-form>
         </el-tab-pane>
 
@@ -196,5 +199,9 @@ async function doRegister() {
   border-radius: 10px !important;
   font-size: 15.5px;
   letter-spacing: 4px;
+}
+.forgot-row {
+  text-align: right;
+  margin-top: 6px;
 }
 </style>

@@ -24,6 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 /**
  * Agent 对话实现
  *
@@ -87,23 +89,38 @@ public class AgentChatServiceImpl implements AgentChatService {
 
             StringBuilder fullResponse = new StringBuilder();
 
+            // 客户端断开不会触发 SseEmitter 回调（只有服务端完成/超时/异常才有），
+            // 浏览器关页面只能靠写入失败发现，所以要在 onNext 里自己检测并取消上游。
+            AtomicBoolean clientGone = new AtomicBoolean(false);
+            AtomicReference<Disposable> upstream = new AtomicReference<>();
+
             Disposable disposable = flux.doOnNext(delta -> {
-                        sendQuietly(emitter, Map.of("type", "delta", "text", delta));
-                        fullResponse.append(delta);
+                        boolean sent = sendDeltaOrCancel(emitter, Map.of("type", "delta", "text", delta),
+                                upstream, clientGone, userId);
+                        if (sent) {
+                            fullResponse.append(delta);
+                        }
                     })
                     .doOnComplete(() -> {
+                        if (clientGone.get()) return;
                         sendQuietly(emitter, Map.of("type", "done"));
                         emitter.complete();
                         // 保存对话历史（流式结束后才能拿到完整回答）
                         saveHistory(historyKey, question, fullResponse.toString());
                     })
                     .doOnError(e -> {
+                        if (clientGone.get()) return;
                         log.error("Agent 流式问答异常 userId={}", userId, e);
                         sendQuietly(emitter, Map.of("type", "error", "msg", "AI 服务开小差了，请稍后再试"));
                         emitter.complete();
                     })
                     .subscribe();
-            // 用户断开 / 超时 / 错误时，取消上游订阅，避免模型继续生成浪费 token
+            upstream.set(disposable);
+            // 首个 delta 可能在 set 之前就写失败，这里补一次取消
+            if (clientGone.get()) {
+                disposable.dispose();
+            }
+            // 超时 / 服务端异常时取消上游订阅，避免模型继续生成浪费 token
             emitter.onCompletion(disposable::dispose);
             emitter.onTimeout(disposable::dispose);
             emitter.onError(e -> disposable.dispose());
@@ -165,6 +182,28 @@ public class AgentChatServiceImpl implements AgentChatService {
         try {
             send(emitter, payload);
         } catch (IOException ignored) {
+        }
+    }
+
+    /**
+     * 转发流式 delta：客户端断开时 SseEmitter 写入会抛 IOException / IllegalStateException。
+     * 返回 false 表示这条 delta 没送出去，调用方不要再把它拼进完整回答。
+     * 同时取消上游订阅，否则模型仍在继续生成、白烧 token（原实现把异常吞掉，订阅不会停）。
+     */
+    private boolean sendDeltaOrCancel(SseEmitter emitter, Map<String, Object> payload,
+                                      AtomicReference<Disposable> upstream,
+                                      AtomicBoolean clientGone, Long userId) {
+        try {
+            send(emitter, payload);
+            return true;
+        } catch (IOException | IllegalStateException e) {
+            clientGone.set(true);
+            log.info("SSE 客户端已断开，取消上游订阅 userId={}", userId);
+            Disposable d = upstream.get();
+            if (d != null) {
+                d.dispose();
+            }
+            return false;
         }
     }
 

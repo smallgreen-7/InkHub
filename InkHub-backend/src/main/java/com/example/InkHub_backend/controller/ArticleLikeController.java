@@ -10,6 +10,7 @@ import com.example.InkHub_backend.entity.Notification;
 import com.example.InkHub_backend.mapper.ArticleLikeMapper;
 import com.example.InkHub_backend.mapper.ArticleMapper;
 import com.example.InkHub_backend.mapper.NotificationMapper;
+import com.example.InkHub_backend.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,6 +32,7 @@ public class ArticleLikeController {
     private final ArticleLikeMapper likeMapper;
     private final ArticleMapper articleMapper;
     private final NotificationMapper notificationMapper;
+    private final NotificationService notificationService;
 
     private Long currentUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -66,7 +68,8 @@ public class ArticleLikeController {
 
             // 点赞通知（幂等：只在第一次点赞时发）
             Article article = articleMapper.selectById(articleId);
-            if (article != null && !article.getAuthorId().equals(userId)) {
+            if (article != null && !article.getAuthorId().equals(userId)
+                    && notificationService.isNotifyEnabled(article.getAuthorId(), 2)) {
                 Notification n = new Notification();
                 n.setUserId(article.getAuthorId());
                 n.setFromUserId(userId);
